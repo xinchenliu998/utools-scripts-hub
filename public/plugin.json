@@ -1,0 +1,29 @@
+{
+  "$schema": "../node_modules/utools-api-types/resource/utools.schema.json",
+  "main": "../index.html",
+  "preload": "preload/services.js",
+  "logo": "logo.png",
+  "development": {
+    "main": "http://localhost:5173"
+  },
+  "features": [
+    {
+      "code": "run",
+      "explain": "运行脚本 - 通过关键字匹配并运行已添加的脚本",
+      "cmds": [
+        "run",
+        "运行",
+        "执行"
+      ]
+    },
+    {
+      "code": "run-setting",
+      "explain": "脚本管理设置 - 配置脚本规则和管理脚本",
+      "cmds": [
+        "run-setting",
+        "脚本设置",
+        "脚本管理"
+      ]
+    }
+  ]
+}
