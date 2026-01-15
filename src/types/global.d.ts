@@ -1,4 +1,7 @@
-import type { UToolsApi } from 'utools-api-types'
+/// <reference types="utools-api-types" />
+
+// 直接使用全局声明的 UToolsApi 接口
+// utools-api-types 包在 utools.api.d.ts 中全局声明了 UToolsApi 接口
 
 declare global {
   interface Window {
@@ -18,4 +21,5 @@ declare global {
   }
 }
 
+// 导出空对象以确保这是一个模块
 export {}
