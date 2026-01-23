@@ -138,7 +138,11 @@ utools-scripts-hub/
 1. **匹配顺序**: 规则按照在数组中的顺序依次匹配，找到第一个匹配的规则即停止
 2. **匹配对象**: 正则表达式会同时匹配文件名和文件扩展名
 3. **匹配失败**: 如果没有规则匹配，使用系统默认应用打开文件
-4. **Linux 终端执行**: 在 Linux 系统下，如果规则指定了应用（如 `node`、`python` 等），系统会自动在终端窗口中执行脚本，方便查看输出和错误信息。支持的终端模拟器包括 gnome-terminal、xterm、konsole、terminator 等
+4. **平台差异处理**:
+   - **Linux**: 如果规则指定了应用（如 `node`、`python` 等），系统会自动在终端窗口中执行脚本，方便查看输出和错误信息。支持的终端模拟器包括 gnome-terminal、xterm、konsole、terminator、xfce4-terminal、mate-terminal、tilix、alacritty、kitty 等（按优先级自动检测）
+   - **Mac**: 如果规则指定了应用，系统会自动在终端窗口中执行脚本。支持的终端应用包括 iTerm2、Terminal.app、Alacritty、Hyper 等（按优先级自动检测）
+   - **Windows**: 直接使用 spawn 创建子进程执行，不通过终端
+5. **Shell 环境**: 在 Linux 和 Mac 平台，执行脚本时会自动 source 用户的 shell 配置文件（如 `.zshrc`、`.bashrc`），确保环境变量和别名可用
 
 #### 示例
 

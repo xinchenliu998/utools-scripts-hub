@@ -82,14 +82,10 @@ const data = window.services.readConfig()
 
 #### 1.3 脚本服务 (scriptService.js)
 
-**职责**: 脚本执行和文件打开
+**职责**: 脚本执行和文件打开逻辑，通过平台服务屏蔽平台调用细节
 
 **核心函数**:
-- `openWithDefaultApp(filePath)`: 使用系统默认应用打开文件
-- `openWithApp(filePath, app, args)`: 使用指定应用打开文件
 - `openWithRule(filePath)`: 根据规则匹配并打开文件
-- `executeInTerminal(filePath, app, args)`: 在终端中执行脚本（Linux）
-- `findTerminalEmulator()`: 查找可用的终端模拟器（Linux）
 
 **规则匹配流程**:
 ```
@@ -102,20 +98,44 @@ const data = window.services.readConfig()
 正则表达式匹配
   ↓
 匹配成功？
-  ├─ 是 → 使用规则指定的应用打开
+  ├─ 是 → 调用平台服务 openWithApp()
   └─ 否 → 继续下一个规则
   ↓
-无匹配规则 → 使用系统默认应用打开
+无匹配规则 → 调用平台服务 openWithSystemApp()
 ```
 
-**Linux 终端执行机制**:
-在 Linux 系统下，当规则指定了应用（如 `node`、`python` 等）时，系统会自动：
-1. 检测操作系统平台
-2. 查找可用的终端模拟器（支持 gnome-terminal、xterm、konsole、terminator 等）
-3. 在终端窗口中执行脚本命令
-4. 保持终端窗口打开，方便查看脚本输出
+#### 1.4 平台服务 (platformService.js)
 
-支持的终端模拟器（按优先级）:
+**职责**: 封装所有平台相关的调用细节，对外提供统一的接口，屏蔽平台差异
+
+**核心函数**:
+- `openWithSystemApp(filePath)`: 使用系统默认应用打开文件
+- `executeScript(filePath, app, args)`: 统一的脚本执行接口，自动处理平台差异
+- `openWithApp(filePath, app, args)`: 使用指定应用打开文件
+
+**平台处理逻辑**:
+- **Linux**: 如果指定了应用，在终端中执行（调用 `terminalService.executeInTerminal()`）
+- **Mac**: 如果指定了应用，在终端中执行（调用 `terminalService.executeInMacTerminal()`）
+- **Windows**: 使用 spawn 直接执行，不通过终端
+
+#### 1.5 终端服务 (terminalService.js)
+
+**职责**: 提供 Linux 和 Mac 平台的终端执行功能
+
+**核心函数**:
+- `executeInTerminal(filePath, app, args)`: 在 Linux 终端中执行脚本
+- `executeInMacTerminal(filePath, app, args)`: 在 Mac 终端中执行脚本
+- `findTerminalEmulator()`: 查找可用的 Linux 终端模拟器
+- `findMacTerminalEmulator()`: 查找可用的 Mac 终端模拟器
+
+**Linux 终端执行机制**:
+1. 自动检测可用的终端模拟器（按优先级）
+2. 获取用户默认 shell 和配置文件
+3. 构建 shell 命令（包含 source 配置文件和执行命令）
+4. 在终端窗口中执行脚本命令
+5. 保持终端窗口打开，方便查看脚本输出
+
+**支持的 Linux 终端模拟器（按优先级）**:
 - gnome-terminal
 - xterm
 - konsole
@@ -126,12 +146,43 @@ const data = window.services.readConfig()
 - alacritty
 - kitty
 
-#### 1.4 工具函数 (utils.js)
+**Mac 终端执行机制**:
+1. 自动检测可用的终端应用（按优先级）
+2. 获取用户默认 shell 和配置文件
+3. 构建 shell 命令（包含 source 配置文件和执行命令）
+4. 使用 AppleScript 或命令行方式在终端中执行
+5. 保持终端窗口打开，方便查看脚本输出
 
-**职责**: 提供通用工具函数
+**支持的 Mac 终端应用（按优先级）**:
+- iTerm2
+- Terminal.app
+- Alacritty
+- Hyper
+
+#### 1.6 Shell 服务 (shellService.js)
+
+**职责**: 提供 shell 相关的工具函数，用于处理 shell 配置、路径和命令构建
 
 **核心函数**:
-- `createSpawnProcess(command, args, options)`: 创建子进程（处理带空格的路径）
+- `getUserShell()`: 获取用户的默认 shell 名称
+- `getUserShellPath()`: 获取 shell 完整路径
+- `getShellConfigFile(shellName)`: 获取 shell 配置文件路径
+- `escapeShellArg(arg)`: 转义 shell 参数（用于 shell -c 内部）
+- `buildShellCommand(command, configFile)`: 构建 shell 命令（包含 source 配置文件和执行命令）
+
+#### 1.7 工具函数 (utils.js)
+
+**职责**: 提供进程创建、参数转义和平台判断功能
+
+**核心函数**:
+- `getPlatform()`: 获取当前平台类型
+- `isMac()`: 判断是否为 Mac 平台
+- `isLinux()`: 判断是否为 Linux 平台
+- `isWindows()`: 判断是否为 Windows 平台
+- `escapeArg(arg, mode, platform)`: 统一的参数转义函数
+  - `mode`: 转义模式 - `'spawn'` (双引号，用于 spawn)、`'shell'` (单引号，用于 shell -c) 或 `'applescript'` (用于 AppleScript 字符串)
+  - `platform`: 平台类型，默认自动检测
+- `createSpawnProcess(command, args, options, platform)`: 创建子进程（处理带空格的路径）
 
 ### 2. 渲染进程模块 (Renderer)
 
@@ -253,16 +304,31 @@ scriptService.openWithRule(filePath)
 遍历规则，正则匹配文件名
   ↓
 匹配成功？
-  ├─ 是 → openWithApp(filePath, rule.app, rule.args)
+  ├─ 是 → platformService.openWithApp(filePath, rule.app, rule.args)
   │         ↓
   │        检测操作系统
   │         ↓
   │        Linux 且指定了 app？
-  │         ├─ 是 → executeInTerminal() → 在终端窗口执行
-  │         └─ 否 → 直接创建子进程执行
-  └─ 否 → openWithDefaultApp(filePath)
-  ↓
-创建子进程执行
+  │         ├─ 是 → terminalService.executeInTerminal()
+  │         │         ↓
+  │         │        查找终端模拟器
+  │         │         ↓
+  │         │        构建 shell 命令（包含 source 配置文件）
+  │         │         ↓
+  │         │        在终端窗口执行
+  │         │
+  │         Mac 且指定了 app？
+  │         ├─ 是 → terminalService.executeInMacTerminal()
+  │         │         ↓
+  │         │        查找终端应用
+  │         │         ↓
+  │         │        构建 shell 命令（包含 source 配置文件）
+  │         │         ↓
+  │         │        使用 AppleScript 或命令行在终端执行
+  │         │
+  │         └─ 否 → 使用 spawn 直接创建子进程执行
+  │
+  └─ 否 → platformService.openWithSystemApp(filePath)
   ↓
 立即返回（不等待结果）
 ```
@@ -331,7 +397,11 @@ export function useScripts() {
 
 - `configService`: 配置管理
 - `fileService`: 文件操作
-- `scriptService`: 脚本执行
+- `scriptService`: 脚本执行（规则匹配）
+- `platformService`: 平台服务（统一平台接口）
+- `terminalService`: 终端服务（Linux/Mac 终端执行）
+- `shellService`: Shell 服务（shell 工具函数）
+- `utils`: 工具函数（进程创建、参数转义、平台判断）
 
 ### 3. 响应式状态管理
 
@@ -345,12 +415,23 @@ const config = ref<Config>({ scripts: [], rules: [] })
 
 ### 添加新的文件打开方式
 
-在 `scriptService.js` 中可以扩展新的打开方式：
+可以通过以下方式扩展新的打开方式：
 
+1. **在平台服务中添加新方法** (`platformService.js`):
 ```javascript
 function openWithCustomMethod(filePath) {
   // 自定义逻辑
 }
+
+module.exports = {
+  // ... 现有方法
+  openWithCustomMethod,
+};
+```
+
+2. **在脚本服务中集成** (`scriptService.js`):
+```javascript
+const { openWithCustomMethod } = require("./platformService");
 
 function openWithRule(filePath) {
   // 现有规则匹配逻辑

@@ -87,8 +87,11 @@ utools-scripts-hub/
 │       └── lib/              # 预加载脚本库
 │           ├── configService.js   # 配置管理服务
 │           ├── fileService.js     # 文件操作服务
-│           ├── scriptService.js   # 脚本执行服务
-│           └── utils.js           # 工具函数
+│           ├── scriptService.js   # 脚本执行服务（规则匹配）
+│           ├── platformService.js # 平台服务（统一平台接口）
+│           ├── terminalService.js # 终端服务（Linux/Mac 终端执行）
+│           ├── shellService.js    # Shell 服务（shell 工具函数）
+│           └── utils.js           # 工具函数（进程创建、参数转义、平台判断）
 ├── src/                       # 源代码目录
 │   ├── App.vue               # 主应用组件（路由管理）
 │   ├── main.ts               # 应用入口文件
@@ -131,8 +134,11 @@ utools-scripts-hub/
 
 - `configService.js`: 配置文件的读写
 - `fileService.js`: 文件系统操作（检查路径、读取目录）
-- `scriptService.js`: 脚本执行（根据规则打开文件）
-- `utils.js`: 工具函数（进程创建等）
+- `scriptService.js`: 脚本执行（根据规则匹配并打开文件）
+- `platformService.js`: 平台服务（封装平台差异，提供统一接口）
+- `terminalService.js`: 终端服务（Linux/Mac 平台的终端执行功能）
+- `shellService.js`: Shell 服务（shell 配置、路径和命令构建）
+- `utils.js`: 工具函数（进程创建、参数转义、平台判断）
 
 ### 2. 渲染进程 (Renderer)
 
@@ -211,7 +217,9 @@ lib/*.js (具体实现)
 
 ### 扩展脚本打开方式
 
-如果需要扩展脚本的打开方式，可以修改 `public/preload/lib/scriptService.js`：
+如果需要扩展脚本的打开方式，可以：
+
+1. **在平台服务中添加新方法** (`public/preload/lib/platformService.js`):
 
 ```javascript
 // 添加新的打开方式
@@ -219,10 +227,21 @@ function openWithCustomMethod(filePath) {
   // 自定义逻辑
 }
 
-// 在 openWithRule 中集成
+module.exports = {
+  // ... 现有方法
+  openWithCustomMethod,
+};
+```
+
+2. **在脚本服务中集成** (`public/preload/lib/scriptService.js`):
+
+```javascript
+const { openWithCustomMethod } = require("./platformService");
+
 function openWithRule(filePath) {
-  // 现有逻辑...
+  // 现有规则匹配逻辑...
   // 可以添加新的匹配规则或打开方式
+  return openWithCustomMethod(filePath);
 }
 ```
 
