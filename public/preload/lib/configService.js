@@ -5,7 +5,7 @@ const path = require("node:path");
 function getDataPath() {
   const dataPath = path.join(
     window.utools.getPath("userData"),
-    "utools-scripts-hub"
+    "utools-scripts-hub",
   );
   if (!fs.existsSync(dataPath)) {
     fs.mkdirSync(dataPath, { recursive: true });

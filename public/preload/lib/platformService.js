@@ -1,5 +1,7 @@
 const { getPlatform, isMac, isLinux, createSpawnProcess } = require("./utils");
-const { executeInTerminal, executeInMacTerminal } = require("./terminalService");
+const { executeInTerminal, executeInMacTerminal } = require(
+  "./terminalService",
+);
 
 /**
  * 平台服务 - 封装所有平台相关的调用细节
@@ -49,7 +51,8 @@ function executeScript(filePath, app, args = []) {
       }
 
       // Windows 或其他平台：使用 spawn 执行
-      const process = createSpawnProcess(app, [filePath, ...args], {
+      // 参数顺序：app args... filePath（与 Linux/Mac 保持一致）
+      const process = createSpawnProcess(app, [...args, filePath], {
         detached: true,
         stdio: "ignore",
       }, getPlatform());

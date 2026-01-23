@@ -52,7 +52,7 @@ function findMacTerminalEmulator() {
       name: "iTerm2",
       check: () => {
         try {
-          execSync('osascript -e \'tell application "iTerm" to get version\'', {
+          execSync("osascript -e 'tell application \"iTerm\" to get version'", {
             stdio: "ignore",
           });
           return "iTerm2";
@@ -65,9 +65,12 @@ function findMacTerminalEmulator() {
       name: "Terminal",
       check: () => {
         try {
-          execSync('osascript -e \'tell application "Terminal" to get version\'', {
-            stdio: "ignore",
-          });
+          execSync(
+            "osascript -e 'tell application \"Terminal\" to get version'",
+            {
+              stdio: "ignore",
+            },
+          );
           return "Terminal";
         } catch (e) {
           return null;
@@ -89,7 +92,7 @@ function findMacTerminalEmulator() {
       name: "Hyper",
       check: () => {
         try {
-          execSync('osascript -e \'tell application "Hyper" to get version\'', {
+          execSync("osascript -e 'tell application \"Hyper\" to get version'", {
             stdio: "ignore",
           });
           return "Hyper";
@@ -111,7 +114,6 @@ function findMacTerminalEmulator() {
   // 如果都没找到，默认使用 Terminal.app
   return "Terminal";
 }
-
 
 // 在终端中执行脚本（Linux）
 function executeInTerminal(filePath, app, args = []) {
@@ -195,7 +197,14 @@ function executeInMacTerminal(filePath, app, args = []) {
 
       // Alacritty 使用命令行方式
       if (terminal === "Alacritty") {
-        const process = createSpawnProcess("alacritty", ["-e", userShellPath, "-i", "-l", "-c", shellCommand], {
+        const process = createSpawnProcess("alacritty", [
+          "-e",
+          userShellPath,
+          "-i",
+          "-l",
+          "-c",
+          shellCommand,
+        ], {
           detached: true,
           stdio: "ignore",
           shell: false,

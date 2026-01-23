@@ -16,7 +16,8 @@ function getUserShell() {
 
 // 获取 shell 完整路径
 function getUserShellPath() {
-  return process.env.SHELL || (os.platform() === "darwin" ? "/bin/zsh" : "/bin/bash");
+  return process.env.SHELL ||
+    (os.platform() === "darwin" ? "/bin/zsh" : "/bin/bash");
 }
 
 // 获取 shell 配置文件路径

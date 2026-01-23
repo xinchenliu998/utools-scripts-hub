@@ -86,30 +86,37 @@ function escapeArg(arg, mode = "spawn", platform = null) {
  * @param {string} platform - 平台类型：'linux' | 'darwin' | 'win32'，默认自动检测
  * @returns {ChildProcess} spawn 进程对象
  */
-function createSpawnProcess(command, commandArgs = [], options = {}, platform = null) {
+function createSpawnProcess(
+  command,
+  commandArgs = [],
+  options = {},
+  platform = null,
+) {
   // 自动检测平台
   if (!platform) {
     platform = os.platform();
   }
 
   const commandHasSpaces = command.includes(" ");
+  const shell = options.shell !== undefined ? options.shell : true;
 
   if (commandHasSpaces) {
     // 对于带空格的命令路径，构建完整的命令字符串
     const quotedCommand = escapeArg(command, "spawn", platform);
-    const quotedArgs = commandArgs.map((arg) => escapeArg(arg, "spawn", platform));
+    const quotedArgs = commandArgs.map((arg) =>
+      escapeArg(arg, "spawn", platform)
+    );
     const fullCommand = [quotedCommand, ...quotedArgs].join(" ");
 
     // 使用 shell 执行完整命令字符串
     return spawn(fullCommand, [], {
       ...options,
-      shell: true,
+      shell,
     });
   } else {
-    // 直接使用 spawn，不通过 shell（更安全，但需要确保命令路径正确）
-    return spawn(command, commandArgs, {
+    spawn(command, commandArgs, {
       ...options,
-      shell: options.shell !== undefined ? options.shell : false,
+      shell,
     });
   }
 }
