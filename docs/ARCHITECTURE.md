@@ -88,6 +88,8 @@ const data = window.services.readConfig()
 - `openWithDefaultApp(filePath)`: 使用系统默认应用打开文件
 - `openWithApp(filePath, app, args)`: 使用指定应用打开文件
 - `openWithRule(filePath)`: 根据规则匹配并打开文件
+- `executeInTerminal(filePath, app, args)`: 在终端中执行脚本（Linux）
+- `findTerminalEmulator()`: 查找可用的终端模拟器（Linux）
 
 **规则匹配流程**:
 ```
@@ -105,6 +107,24 @@ const data = window.services.readConfig()
   ↓
 无匹配规则 → 使用系统默认应用打开
 ```
+
+**Linux 终端执行机制**:
+在 Linux 系统下，当规则指定了应用（如 `node`、`python` 等）时，系统会自动：
+1. 检测操作系统平台
+2. 查找可用的终端模拟器（支持 gnome-terminal、xterm、konsole、terminator 等）
+3. 在终端窗口中执行脚本命令
+4. 保持终端窗口打开，方便查看脚本输出
+
+支持的终端模拟器（按优先级）:
+- gnome-terminal
+- xterm
+- konsole
+- terminator
+- xfce4-terminal
+- mate-terminal
+- tilix
+- alacritty
+- kitty
 
 #### 1.4 工具函数 (utils.js)
 
@@ -234,6 +254,12 @@ scriptService.openWithRule(filePath)
   ↓
 匹配成功？
   ├─ 是 → openWithApp(filePath, rule.app, rule.args)
+  │         ↓
+  │        检测操作系统
+  │         ↓
+  │        Linux 且指定了 app？
+  │         ├─ 是 → executeInTerminal() → 在终端窗口执行
+  │         └─ 否 → 直接创建子进程执行
   └─ 否 → openWithDefaultApp(filePath)
   ↓
 创建子进程执行
