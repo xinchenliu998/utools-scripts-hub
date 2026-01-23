@@ -114,7 +114,7 @@ function createSpawnProcess(
       shell,
     });
   } else {
-    spawn(command, commandArgs, {
+    return spawn(command, commandArgs, {
       ...options,
       shell,
     });
