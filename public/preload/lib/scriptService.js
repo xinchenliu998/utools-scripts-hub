@@ -23,7 +23,7 @@ function openWithRule(filePath) {
     if (rule.disabled) {
       continue;
     }
-    
+
     try {
       const regex = new RegExp(rule.pattern);
       if (regex.test(fileName) || regex.test(ext)) {

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ScriptList from './components/ScriptList.vue'
-import RuleList from './components/RuleList.vue'
+import ScriptList from '@/RunSetting/components/ScriptList.vue'
+import RuleList from '@/RunSetting/components/RuleList.vue'
+
+import type { EnterAction } from '@/types/global'
 
 defineProps<{
-  enterAction?: any
+  enterAction?: EnterAction
 }>()
 
 const activeTab = ref<'scripts' | 'rules'>('scripts')
@@ -13,16 +15,10 @@ const activeTab = ref<'scripts' | 'rules'>('scripts')
 <template>
   <div class="run-setting-container">
     <div class="tabs">
-      <button
-        :class="['tab-btn', { active: activeTab === 'scripts' }]"
-        @click="activeTab = 'scripts'"
-      >
+      <button :class="['tab-btn', { active: activeTab === 'scripts' }]" @click="activeTab = 'scripts'">
         脚本管理
       </button>
-      <button
-        :class="['tab-btn', { active: activeTab === 'rules' }]"
-        @click="activeTab = 'rules'"
-      >
+      <button :class="['tab-btn', { active: activeTab === 'rules' }]" @click="activeTab = 'rules'">
         规则配置
       </button>
     </div>

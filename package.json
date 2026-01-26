@@ -1,4 +1,7 @@
 {
+  "name": "utools-scripts-hub",
+  "version": "1.0.3",
+  "description": "A script runner for utools",
   "type": "module",
   "scripts": {
     "dev": "vite",

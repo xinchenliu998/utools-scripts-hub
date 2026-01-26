@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { ScriptItem } from '../../composables/useScripts'
+import type { ScriptItem } from '@/composables/useScripts'
+import ActionButtons from '@/RunSetting/components/common/ActionButtons.vue'
+import { UI_ICONS } from '@/constants/ui'
 
 const props = defineProps<{
   script: ScriptItem
+  index?: number
+  total?: number
 }>()
 
 const emit = defineEmits<{
@@ -18,6 +22,18 @@ const displayPath = computed(() => {
   return props.script.path
 })
 
+const tooltipPosition = computed(() => {
+  const index = props.index ?? 0
+  const total = props.total ?? 1
+  // 第一项（索引0）在下面显示，最后一项在上面显示
+  if (index === 0) {
+    return 'bottom'
+  } else if (index === total - 1) {
+    return 'top'
+  }
+  return 'bottom'
+})
+
 function handleEdit() {
   emit('edit', props.script)
 }
@@ -26,7 +42,7 @@ function handleDelete() {
   emit('delete', props.script.id)
 }
 
-function handleToggleDisabled() {
+function handleToggle() {
   emit('toggleDisabled', props.script.id)
 }
 </script>
@@ -36,19 +52,14 @@ function handleToggleDisabled() {
     <div class="script-header" @click="showDetails = !showDetails">
       <div class="script-info">
         <div class="script-name">
-          <span class="icon">{{ script.isDirectory ? '📁' : '📄' }}</span>
+          <span class="icon">{{ script.isDirectory ? UI_ICONS.folder : UI_ICONS.file }}</span>
           {{ script.name }}
           <span v-if="script.disabled" class="disabled-badge">已禁用</span>
         </div>
         <div class="script-path">{{ displayPath }}</div>
       </div>
-      <div class="script-actions">
-        <button @click.stop="handleToggleDisabled" class="action-btn" :class="script.disabled ? 'enable-btn' : 'disable-btn'">
-          {{ script.disabled ? '启用' : '禁用' }}
-        </button>
-        <button @click.stop="handleEdit" class="action-btn">编辑</button>
-        <button @click.stop="handleDelete" class="action-btn delete-btn">删除</button>
-      </div>
+      <ActionButtons :disabled="script.disabled" :show-edit="true" :show-delete="true" :show-toggle="true"
+        :tooltip-position="tooltipPosition" @edit="handleEdit" @delete="handleDelete" @toggle="handleToggle" />
     </div>
 
     <div v-if="showDetails" class="script-details">
@@ -115,57 +126,6 @@ function handleToggleDisabled() {
   word-break: break-all;
 }
 
-.script-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: 12px;
-}
-
-.action-btn {
-  padding: 6px 12px;
-  background-color: var(--blue, rgb(88, 164, 246));
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: opacity 0.2s;
-}
-
-.action-btn:hover {
-  opacity: 0.8;
-}
-
-.action-btn.disable-btn {
-  background-color: #ff9800;
-  color: white;
-  border: none;
-}
-
-.action-btn.disable-btn:hover {
-  opacity: 0.8;
-}
-
-.action-btn.enable-btn {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-}
-
-.action-btn.enable-btn:hover {
-  opacity: 0.8;
-}
-
-.action-btn.delete-btn {
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-}
-
-.action-btn.delete-btn:hover {
-  opacity: 0.8;
-}
-
 .script-item.disabled {
   opacity: 0.6;
   background-color: #f5f5f5;
@@ -216,45 +176,6 @@ function handleToggleDisabled() {
 
   .script-path {
     color: #bbb;
-  }
-
-  .action-btn {
-    background-color: var(--blue, rgb(88, 164, 246));
-    color: #fff;
-  }
-
-  .action-btn:hover {
-    opacity: 0.8;
-  }
-
-  .action-btn.disable-btn {
-    background-color: #ff9800;
-    color: white;
-    border: none;
-  }
-
-  .action-btn.disable-btn:hover {
-    opacity: 0.8;
-  }
-
-  .action-btn.enable-btn {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-  }
-
-  .action-btn.enable-btn:hover {
-    opacity: 0.8;
-  }
-
-  .action-btn.delete-btn {
-    background-color: #ff5252;
-    color: white;
-    border: none;
-  }
-
-  .action-btn.delete-btn:hover {
-    opacity: 0.8;
   }
 
   .script-item.disabled {

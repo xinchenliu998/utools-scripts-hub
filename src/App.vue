@@ -1,25 +1,27 @@
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue'
-import Run from './Run/index.vue'
-import RunSetting from './RunSetting/index.vue'
+import Run from '@/Run/index.vue'
+import RunSetting from '@/RunSetting/index.vue'
+
+import type { EnterAction } from '@/types/global'
 
 const route = ref('')
-const enterAction = ref<any>({})
+const enterAction = ref<EnterAction>({} as EnterAction)
 
 onMounted(() => {
   // 监听插件进入事件
-  window.utools.onPluginEnter((action: any) => {
+  window.utools.onPluginEnter((action: EnterAction) => {
     console.log('Plugin entered:', action)
     route.value = action.code
     enterAction.value = action
   })
-  
+
   // 监听插件退出事件
   window.utools.onPluginOut((isKill: boolean) => {
     console.log('Plugin out:', isKill)
     route.value = ''
   })
-  
+
   // 尝试获取当前进入的动作（如果已经进入）
   nextTick(() => {
     try {
@@ -56,6 +58,7 @@ onMounted(() => {
 }
 
 @media (prefers-color-scheme: dark) {
+
   .loading-container,
   .unknown-route {
     color: #bbb;

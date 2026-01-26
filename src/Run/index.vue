@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useScripts, getAllScripts, type ScriptItem } from '../composables/useScripts'
+import { useScripts, getAllScripts, type ScriptItem } from '@/composables/useScripts'
+import IconButton from '@/RunSetting/components/common/IconButton.vue'
+import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
+import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
+
+import type { EnterAction } from '@/types/global'
 
 defineProps<{
-  enterAction?: any
+  enterAction?: EnterAction
 }>()
 
 const { loadConfig, searchScripts } = useScripts()
@@ -74,11 +79,12 @@ async function executeScript(script: ScriptItem) {
 
     // 根据规则使用外部应用打开文件
     await window.services.openWithRule(script.path)
-    
+
     // 成功后退出插件（可选）
     // window.utools.outPlugin()
-  } catch (error: any) {
-    window.utools.showNotification(`打开失败: ${error.error || error.message || '未知错误'}`)
+  } catch (error: unknown) {
+    const err = error as { error?: string; message?: string }
+    window.utools.showNotification(`打开失败: ${err.error || err.message || '未知错误'}`)
   }
 }
 
@@ -99,23 +105,21 @@ onMounted(() => {
 <template>
   <div class="run-container" @keydown="handleKeyDown" tabindex="0">
     <div class="search-section">
-      <input
-        v-model="keyword"
-        type="text"
-        class="search-input"
-        placeholder="输入文件名或关键字搜索脚本..."
-        autofocus
-      />
+      <input v-model="keyword" type="text" class="search-input" placeholder="输入文件名或关键字搜索脚本..." autofocus />
+      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="UI_TOOLTIPS.run" variant="primary"
+        tooltip-position="left" @click="executeScript(selectedScript)" />
+      <HelpTooltip>
+        在搜索框中输入文件名或关键字快速查找脚本。
+        使用 <code>↑</code> <code>↓</code> 键选择脚本，<code>Enter</code> 键或点击运行按钮执行。
+        双击脚本项也可以直接运行。
+        使用 "run-setting" 关键字可以管理脚本和规则。
+      </HelpTooltip>
     </div>
 
     <div class="scripts-list" v-if="scripts.length > 0">
-      <div
-        v-for="(script, index) in scripts"
-        :key="script.id"
-        :class="['script-item', { active: index === selectedIndex }]"
-        @click="selectScript(index)"
-        @dblclick="executeScript(script)"
-      >
+      <div v-for="(script, index) in scripts" :key="script.id"
+        :class="['script-item', { active: index === selectedIndex }]" @click="selectScript(index)"
+        @dblclick="executeScript(script)">
         <div class="script-name">{{ script.name }}</div>
         <div class="script-path">{{ script.path }}</div>
         <div class="script-description" v-if="script.description">
@@ -127,15 +131,6 @@ onMounted(() => {
     <div class="empty-state" v-else>
       <p>没有找到匹配的脚本</p>
       <p class="hint">使用 "run-setting" 关键字添加脚本</p>
-    </div>
-
-    <div class="execute-section" v-if="selectedScript">
-      <button
-        @click="executeScript(selectedScript)"
-        class="execute-btn"
-      >
-        运行脚本 (Enter)
-      </button>
     </div>
   </div>
 </template>
@@ -150,11 +145,14 @@ onMounted(() => {
 }
 
 .search-section {
+  display: flex;
+  gap: 12px;
+  align-items: center;
   margin-bottom: 20px;
 }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   padding: 12px;
   font-size: 14px;
   border: 1px solid #ddd;
@@ -171,7 +169,6 @@ onMounted(() => {
 .scripts-list {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 20px;
 }
 
 .script-item {
@@ -228,29 +225,6 @@ onMounted(() => {
   margin-top: 8px;
 }
 
-.execute-section {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #ddd;
-}
-
-.execute-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--blue, rgb(88, 164, 246));
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.execute-btn:hover:not(:disabled) {
-  opacity: 0.8;
-}
-
-
 @media (prefers-color-scheme: dark) {
   .search-input {
     background-color: #424242;
@@ -281,10 +255,6 @@ onMounted(() => {
 
   .script-description {
     color: #999;
-  }
-
-  .execute-section {
-    border-top-color: #666;
   }
 }
 </style>

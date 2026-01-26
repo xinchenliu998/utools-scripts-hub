@@ -95,6 +95,10 @@ const data = window.services.readConfig()
   ↓
 遍历规则列表
   ↓
+规则是否禁用？
+  ├─ 是 → 跳过该规则
+  └─ 否 → 继续
+  ↓
 正则表达式匹配
   ↓
 匹配成功？
@@ -219,6 +223,7 @@ interface ScriptItem {
   isDirectory: boolean
   keywords?: string[]
   description?: string
+  disabled?: boolean    // 是否禁用（禁用的脚本不会在运行界面显示）
 }
 
 interface RuleItem {
@@ -228,15 +233,22 @@ interface RuleItem {
   app?: string          // 指定应用
   args?: string[]       // 启动参数
   description?: string
+  disabled?: boolean    // 是否禁用（禁用的规则不会参与匹配）
 }
 ```
+
+**类型定义位置**:
+- `src/composables/useScripts.ts`: ScriptItem, RuleItem, Config
+- `src/types/global.d.ts`: DirectoryItem, OpenDialogOptions, EnterAction, Window.services
 
 **核心功能**:
 - 配置的加载和保存
 - 脚本的 CRUD 操作
+- 脚本启用/禁用切换（`toggleScriptDisabled`）
 - 规则的 CRUD 操作
+- 规则启用/禁用切换（`toggleRuleDisabled`）
 - 脚本搜索（支持文件名、路径、描述匹配）
-- 脚本扁平化（处理文件夹嵌套）
+- 脚本扁平化（处理文件夹嵌套，自动过滤禁用的脚本和文件夹）
 
 #### 2.3 运行界面 (Run/index.vue)
 
@@ -265,6 +277,19 @@ interface RuleItem {
 - `RuleList.vue`: 规则列表展示
 - `RuleItem.vue`: 单个规则项
 - `AddRuleDialog.vue`: 添加/编辑规则对话框
+
+**共享组件** (`common/`):
+- `BaseDialog.vue`: 基础对话框组件（提取对话框通用样式和结构，支持标题、内容区域、底部操作区域）
+- `IconButton.vue`: 图标按钮组件（支持8个方位的tooltip、自定义圆角、多种颜色变体）
+- `ActionButtons.vue`: 操作按钮组（编辑、删除、启用/禁用）
+- `EmptyState.vue`: 空状态组件（统一空状态展示）
+- `SearchInput.vue`: 搜索输入框组件（统一搜索框样式）
+- `HelpTooltip.vue`: 帮助提示组件（统一帮助提示）
+- `FormItem.vue`: 表单项组件（标签、输入框、提示）
+- `FormInput.vue`: 表单输入组件（支持文本和文本域）
+
+**常量文件**:
+- `src/constants/ui.ts`: UI相关常量（颜色、尺寸、图标、提示文字等）
 
 ## 🔄 数据流
 
@@ -403,7 +428,26 @@ export function useScripts() {
 - `shellService`: Shell 服务（shell 工具函数）
 - `utils`: 工具函数（进程创建、参数转义、平台判断）
 
-### 3. 响应式状态管理
+### 3. 组件复用模式
+
+渲染进程采用组件复用模式，提取公共组件：
+
+- `BaseDialog`: 基础对话框（提取对话框通用样式和结构，支持标题、内容区域、底部操作区域）
+- `FormItem`: 表单项组件（统一表单样式，支持标签、输入框、提示信息）
+- `FormInput`: 表单输入组件（统一输入框样式，支持文本输入和文本域）
+- `IconButton`: 图标按钮组件（统一按钮样式和行为，支持8个方位的tooltip、自定义圆角、多种颜色变体）
+- `ActionButtons`: 操作按钮组（统一操作按钮，支持编辑、删除、启用/禁用）
+- `EmptyState`: 空状态组件（统一空状态展示）
+- `SearchInput`: 搜索输入框组件（统一搜索框样式）
+- `HelpTooltip`: 帮助提示组件（统一帮助提示）
+
+### 4. 常量配置模式
+
+将UI相关的硬编码值提取到常量文件中，便于统一管理和维护：
+
+- `src/constants/ui.ts`: 统一管理颜色、尺寸、图标、提示文字等UI常量
+
+### 5. 响应式状态管理
 
 使用 Vue 3 的响应式系统管理状态，无需引入额外的状态管理库：
 

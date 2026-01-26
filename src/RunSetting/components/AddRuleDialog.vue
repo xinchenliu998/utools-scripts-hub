@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useScripts, type RuleItem } from '../../composables/useScripts'
+import { useScripts, type RuleItem } from '@/composables/useScripts'
+import BaseDialog from './common/BaseDialog.vue'
+import FormItem from './common/FormItem.vue'
+import FormInput from './common/FormInput.vue'
+import IconButton from './common/IconButton.vue'
+import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
 
 const props = defineProps<{
   rule?: RuleItem | null
@@ -18,6 +23,7 @@ const app = ref('')
 const args = ref('')
 const description = ref('')
 const isEditing = ref(false)
+const selectedTemplate = ref('')
 
 onMounted(() => {
   if (props.rule) {
@@ -36,7 +42,6 @@ function handleSave() {
     return
   }
 
-  // 验证正则表达式
   try {
     new RegExp(pattern.value)
   } catch (e) {
@@ -68,8 +73,8 @@ function handleCancel() {
   emit('close')
 }
 
-// 常用规则模板
 const templates = [
+  { name: '', label: '不使用模板' },
   { name: 'JavaScript 文件', pattern: '\\.js$', app: 'node' },
   { name: 'Python 文件', pattern: '\\.py$', app: 'python' },
   { name: 'PowerShell 脚本', pattern: '\\.ps1$', app: 'powershell', args: '-ExecutionPolicy Bypass -File' },
@@ -77,314 +82,122 @@ const templates = [
   { name: '批处理文件', pattern: '\\.(bat|cmd)$', app: '' }
 ]
 
-function applyTemplate(template: typeof templates[0]) {
-  name.value = template.name
-  pattern.value = template.pattern
-  app.value = template.app
-  args.value = template.args || ''
+function applyTemplate() {
+  if (!selectedTemplate.value) {
+    // 选择"不使用模板"时，清空所有表单内容
+    name.value = ''
+    pattern.value = ''
+    app.value = ''
+    args.value = ''
+    return
+  }
+  const template = templates.find(t => t.name === selectedTemplate.value)
+  if (template && template.name) {
+    name.value = template.name
+    pattern.value = template.pattern || ''
+    app.value = template.app || ''
+    args.value = template.args || ''
+  }
 }
 </script>
 
 <template>
-  <div class="dialog-overlay">
-    <div class="dialog-content">
-      <div class="dialog-header">
-        <h3>{{ isEditing ? '编辑规则' : '添加规则' }}</h3>
-        <button @click="handleCancel" class="close-btn">×</button>
-      </div>
-
-      <div class="dialog-body">
-        <div class="templates-section" v-if="!isEditing">
-          <div class="templates-label">快速模板：</div>
-          <div class="templates-list">
-            <button
-              v-for="template in templates"
-              :key="template.name"
-              @click="applyTemplate(template)"
-              class="template-btn"
-            >
-              {{ template.name }}
-            </button>
-          </div>
-        </div>
-
-        <div class="form-item">
-          <label>规则名称：</label>
-          <input v-model="name" type="text" placeholder="例如: JavaScript 文件" />
-        </div>
-
-        <div class="form-item">
-          <label>匹配模式（正则表达式）：</label>
-          <input v-model="pattern" type="text" placeholder="例如: \.js$" />
-          <div class="form-hint">用于匹配文件名或后缀的正则表达式</div>
-        </div>
-
-        <div class="form-item">
-          <label>指定应用（可选）：</label>
-          <input v-model="app" type="text" placeholder="例如: node, python, powershell" />
-          <div class="form-hint">留空则使用默认方式执行脚本</div>
-        </div>
-
-        <div class="form-item">
-          <label>参数（可选，空格分隔）：</label>
-          <input v-model="args" type="text" placeholder="例如: -ExecutionPolicy Bypass -File" />
-        </div>
-
-        <div class="form-item">
-          <label>描述（可选）：</label>
-          <textarea v-model="description" placeholder="规则描述" rows="2"></textarea>
+  <BaseDialog :title="isEditing ? '编辑规则' : '添加规则'" @close="handleCancel">
+    <template #default>
+      <div class="templates-section" v-if="!isEditing">
+        <div class="template-form-item">
+          <label>快速模板：</label>
+          <select v-model="selectedTemplate" @change="applyTemplate" class="template-select">
+            <option v-for="template in templates" :key="template.name || 'none'" :value="template.name">
+              {{ template.label || template.name }}
+            </option>
+          </select>
         </div>
       </div>
 
-      <div class="dialog-footer">
-        <button @click="handleCancel" class="cancel-btn">取消</button>
-        <button @click="handleSave" class="save-btn">保存</button>
-      </div>
-    </div>
-  </div>
+      <FormItem label="规则名称：">
+        <FormInput v-model="name" placeholder="例如: JavaScript 文件" />
+      </FormItem>
+
+      <FormItem label="匹配模式（正则表达式）：" hint="用于匹配文件名或后缀的正则表达式">
+        <FormInput v-model="pattern" placeholder="例如: \.js$" />
+      </FormItem>
+
+      <FormItem label="指定应用（可选）：" hint="留空则使用默认方式执行脚本">
+        <FormInput v-model="app" placeholder="例如: node, python, powershell" />
+      </FormItem>
+
+      <FormItem label="参数（可选，空格分隔）：">
+        <FormInput v-model="args" placeholder="例如: -ExecutionPolicy Bypass -File" />
+      </FormItem>
+
+      <FormItem label="描述（可选）：">
+        <FormInput v-model="description" type="textarea" placeholder="规则描述" :rows="2" />
+      </FormItem>
+    </template>
+
+    <template #footer>
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+    </template>
+  </BaseDialog>
 </template>
 
 <style scoped>
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.dialog-content {
-  background-color: #fff;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.dialog-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.close-btn:hover {
-  background-color: #f5f5f5;
-}
-
-.dialog-body {
-  padding: 20px;
-  overflow-y: auto;
-  flex: 1;
-}
-
 .templates-section {
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid #eee;
 }
 
-.templates-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.templates-list {
+.template-form-item {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
 }
 
-.template-btn {
-  padding: 6px 12px;
-  background-color: #f0f7ff;
-  border: 1px solid #b3d9ff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--blue, rgb(88, 164, 246));
-  transition: all 0.2s;
-}
-
-.template-btn:hover {
-  background-color: #e3f2fd;
-  border-color: var(--blue, rgb(88, 164, 246));
-}
-
-.form-item {
-  margin-bottom: 16px;
-}
-
-.form-item:last-child {
-  margin-bottom: 0;
-}
-
-.form-item label {
-  display: block;
-  margin-bottom: 6px;
+.template-form-item label {
   font-size: 13px;
   font-weight: 600;
   color: #333;
+  white-space: nowrap;
+  margin: 0;
 }
 
-.form-item input[type="text"],
-.form-item textarea {
-  width: 100%;
+.template-select {
+  flex: 1;
   padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
   font-family: inherit;
+  background-color: #fff;
+  cursor: pointer;
 }
 
-.form-item input[type="text"]:focus,
-.form-item textarea:focus {
+.template-select:focus {
   outline: none;
   border-color: var(--blue, rgb(88, 164, 246));
 }
 
-.form-item textarea {
-  resize: vertical;
-}
-
-.form-hint {
-  font-size: 12px;
-  color: #999;
-  margin-top: 4px;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid #eee;
-}
-
-.cancel-btn,
-.save-btn {
-  padding: 8px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: opacity 0.2s;
-}
-
-.cancel-btn {
-  background-color: #e0e0e0;
-  color: #333;
-}
-
-.cancel-btn:hover {
-  opacity: 0.8;
-}
-
-.save-btn {
-  background-color: var(--blue, rgb(88, 164, 246));
-  color: white;
-}
-
-.save-btn:hover {
-  opacity: 0.8;
-}
-
 @media (prefers-color-scheme: dark) {
-  .dialog-content {
-    background-color: #424242;
-  }
-
-  .dialog-header {
-    border-bottom-color: #666;
-  }
-
-  .dialog-header h3 {
-    color: #fff;
-  }
-
-  .close-btn {
-    color: #bbb;
-  }
-
-  .close-btn:hover {
-    background-color: #505050;
-  }
-
   .templates-section {
     border-bottom-color: #666;
   }
 
-  .templates-label {
-    color: #bbb;
-  }
-
-  .template-btn {
-    background-color: #1e3a5f;
-    border-color: #3d5a80;
-    color: #90caf9;
-  }
-
-  .template-btn:hover {
-    background-color: #2d4a6b;
-    border-color: #90caf9;
-  }
-
-  .form-item label {
+  .template-form-item label {
     color: #fff;
   }
 
-  .form-item input[type="text"],
-  .form-item textarea {
+  .template-select {
     background-color: #383838;
     border-color: #666;
     color: #fff;
   }
 
-  .form-hint {
-    color: #999;
-  }
-
-  .dialog-footer {
-    border-top-color: #666;
-  }
-
-  .cancel-btn {
-    background-color: #606060;
-    color: #fff;
+  .template-select:focus {
+    border-color: var(--blue, rgb(88, 164, 246));
   }
 }
 </style>

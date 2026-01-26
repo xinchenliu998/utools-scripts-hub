@@ -70,6 +70,15 @@ utools-scripts-hub/
       "app": "code",
       "args": [],
       "description": "使用 VS Code 打开文本文件"
+    },
+    {
+      "id": "rule-004",
+      "name": "已禁用的规则",
+      "pattern": "\\.old$",
+      "app": "notepad",
+      "args": [],
+      "description": "这是一个已禁用的规则示例",
+      "disabled": true
     }
   ]
 }
@@ -91,6 +100,7 @@ utools-scripts-hub/
 | `isDirectory` | `boolean` | 是 | 是否为文件夹，`true` 表示文件夹，`false` 表示文件 |
 | `keywords` | `string[]` | 否 | 关键字数组，用于搜索匹配（当前未使用） |
 | `description` | `string` | 否 | 脚本的描述信息，用于搜索和识别 |
+| `disabled` | `boolean` | 否 | 是否禁用，`true` 表示禁用，禁用的脚本不会在运行界面显示 |
 
 #### 示例
 
@@ -116,7 +126,22 @@ utools-scripts-hub/
 }
 ```
 
-**注意**: 当 `isDirectory` 为 `true` 时，程序会在运行时递归读取文件夹内容，将文件夹中的所有文件扁平化为脚本列表。
+**禁用的脚本**:
+```json
+{
+  "id": "script-003",
+  "name": "old-script.js",
+  "path": "C:\\scripts\\old-script.js",
+  "isDirectory": false,
+  "description": "已废弃的脚本",
+  "disabled": true
+}
+```
+
+**注意**: 
+- 当 `isDirectory` 为 `true` 时，程序会在运行时递归读取文件夹内容，将文件夹中的所有文件扁平化为脚本列表
+- 禁用的脚本（`disabled: true`）不会在运行界面显示，也不会被搜索到
+- 禁用的文件夹会继承禁用状态到其所有子文件和子文件夹
 
 ### rules (规则列表)
 
@@ -132,12 +157,14 @@ utools-scripts-hub/
 | `app` | `string` | 否 | 指定用于打开文件的外部应用，留空则使用系统默认应用 |
 | `args` | `string[]` | 否 | 应用启动时的参数数组，多个参数用数组元素分隔 |
 | `description` | `string` | 否 | 规则的描述信息 |
+| `disabled` | `boolean` | 否 | 是否禁用，`true` 表示禁用，禁用的规则不会参与匹配 |
 
 #### 规则匹配机制
 
 1. **匹配顺序**: 规则按照在数组中的顺序依次匹配，找到第一个匹配的规则即停止
-2. **匹配对象**: 正则表达式会同时匹配文件名和文件扩展名
-3. **匹配失败**: 如果没有规则匹配，使用系统默认应用打开文件
+2. **跳过禁用规则**: 已禁用的规则（`disabled: true`）会被跳过，不参与匹配
+3. **匹配对象**: 正则表达式会同时匹配文件名和文件扩展名
+4. **匹配失败**: 如果没有规则匹配，使用系统默认应用打开文件
 4. **平台差异处理**:
    - **Linux**: 如果规则指定了应用（如 `node`、`python` 等），系统会自动在终端窗口中执行脚本，方便查看输出和错误信息。支持的终端模拟器包括 gnome-terminal、xterm、konsole、terminator、xfce4-terminal、mate-terminal、tilix、alacritty、kitty 等（按优先级自动检测）
    - **Mac**: 如果规则指定了应用，系统会自动在终端窗口中执行脚本。支持的终端应用包括 iTerm2、Terminal.app、Alacritty、Hyper 等（按优先级自动检测）
@@ -201,6 +228,19 @@ utools-scripts-hub/
   "name": "图片文件",
   "pattern": "\\.(jpg|jpeg|png|gif|bmp)$",
   "description": "使用系统默认图片查看器打开"
+}
+```
+
+**禁用的规则**:
+```json
+{
+  "id": "rule-006",
+  "name": "已废弃的规则",
+  "pattern": "\\.old$",
+  "app": "notepad",
+  "args": [],
+  "description": "这个规则已被禁用，不会参与匹配",
+  "disabled": true
 }
 ```
 

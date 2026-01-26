@@ -106,11 +106,22 @@ utools-scripts-hub/
 │   │       ├── AddScriptDialog.vue # 添加脚本对话框
 │   │       ├── RuleList.vue        # 规则列表
 │   │       ├── RuleItem.vue        # 规则项
-│   │       └── AddRuleDialog.vue   # 添加规则对话框
+│   │       ├── AddRuleDialog.vue   # 添加规则对话框
+│   │       └── common/             # 共享组件
+│   │           ├── BaseDialog.vue  # 基础对话框组件
+│   │           ├── IconButton.vue  # 图标按钮组件
+│   │           ├── ActionButtons.vue # 操作按钮组
+│   │           ├── EmptyState.vue  # 空状态组件
+│   │           ├── SearchInput.vue # 搜索输入框组件
+│   │           ├── HelpTooltip.vue # 帮助提示组件
+│   │           ├── FormItem.vue    # 表单项组件
+│   │           └── FormInput.vue   # 表单输入组件
 │   ├── composables/          # Vue 组合式函数
-│   │   └── useScripts.ts     # 脚本管理逻辑（状态管理、CRUD）
+│   │   └── useScripts.ts     # 脚本管理逻辑（状态管理、CRUD、启用/禁用）
+│   ├── constants/            # 常量定义
+│   │   └── ui.ts             # UI相关常量（颜色、尺寸、图标、提示文字等）
 │   └── types/                # TypeScript 类型定义
-│       └── global.d.ts       # 全局类型声明
+│       └── global.d.ts       # 全局类型声明（window.services、DirectoryItem、EnterAction等）
 ├── docs/                     # 文档目录
 │   ├── DEVELOPMENT.md        # 开发文档（本文件）
 │   ├── ARCHITECTURE.md       # 架构文档
@@ -335,11 +346,14 @@ function readConfig() {
 - `addScript(script)`: 添加脚本
 - `removeScript(id)`: 删除脚本
 - `updateScript(id, updates)`: 更新脚本
+- `toggleScriptDisabled(id)`: 切换脚本禁用状态
 - `addRule(rule)`: 添加规则
 - `removeRule(id)`: 删除规则
 - `updateRule(id, updates)`: 更新规则
-- `searchScripts(keyword)`: 搜索脚本
-- `getAllScripts()`: 获取所有脚本（扁平化，包括文件夹中的脚本）
+- `toggleRuleDisabled(id)`: 切换规则禁用状态
+- `searchScripts(keyword)`: 搜索脚本（自动过滤禁用的脚本）
+- `searchRules(keyword)`: 搜索规则
+- `getAllScripts()`: 获取所有脚本（扁平化，包括文件夹中的脚本，自动过滤禁用的脚本）
 
 ## 🧪 测试
 
