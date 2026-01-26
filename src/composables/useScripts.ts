@@ -7,6 +7,7 @@ export interface ScriptItem {
   isDirectory: boolean
   keywords?: string[]
   description?: string
+  disabled?: boolean
 }
 
 export interface RuleItem {
@@ -16,6 +17,7 @@ export interface RuleItem {
   app?: string
   args?: string[]
   description?: string
+  disabled?: boolean
 }
 
 export interface Config {
@@ -78,6 +80,16 @@ export function updateScript(id: string, updates: Partial<ScriptItem>) {
   return false
 }
 
+// 切换脚本禁用状态
+export function toggleScriptDisabled(id: string) {
+  const script = config.value.scripts.find(s => s.id === id)
+  if (script) {
+    script.disabled = !script.disabled
+    return saveConfig()
+  }
+  return false
+}
+
 // 添加规则
 export function addRule(rule: RuleItem) {
   config.value.rules.push(rule)
@@ -104,6 +116,32 @@ export function updateRule(id: string, updates: Partial<RuleItem>) {
   return false
 }
 
+// 切换规则禁用状态
+export function toggleRuleDisabled(id: string) {
+  const rule = config.value.rules.find(r => r.id === id)
+  if (rule) {
+    rule.disabled = !rule.disabled
+    return saveConfig()
+  }
+  return false
+}
+
+// 搜索规则
+export function searchRules(keyword: string) {
+  if (!keyword) return config.value.rules
+  
+  const lowerKeyword = keyword.toLowerCase()
+  
+  return config.value.rules.filter(rule => {
+    const nameMatch = rule.name.toLowerCase().includes(lowerKeyword)
+    const patternMatch = rule.pattern.toLowerCase().includes(lowerKeyword)
+    const appMatch = rule.app?.toLowerCase().includes(lowerKeyword)
+    const descMatch = rule.description?.toLowerCase().includes(lowerKeyword)
+    
+    return nameMatch || patternMatch || appMatch || descMatch
+  })
+}
+
 // 搜索脚本（支持文件名匹配）
 export function searchScripts(keyword: string) {
   if (!keyword) return getAllScripts()
@@ -126,8 +164,13 @@ export function searchScripts(keyword: string) {
 export function getAllScripts(): ScriptItem[] {
   const result: ScriptItem[] = []
   
-  function traverse(items: ScriptItem[], parentId = '') {
+  function traverse(items: ScriptItem[]) {
     for (const item of items) {
+      // 跳过已禁用的脚本
+      if (item.disabled) {
+        continue
+      }
+      
       if (item.isDirectory) {
         // 如果是目录，尝试读取目录内容（递归处理嵌套）
         try {
@@ -141,9 +184,10 @@ export function getAllScripts(): ScriptItem[] {
                 path: dirItem.path,
                 isDirectory: true,
                 keywords: item.keywords,
-                description: item.description
+                description: item.description,
+                disabled: item.disabled // 继承父目录的禁用状态
               }
-              traverse([subDir], item.id)
+              traverse([subDir])
             } else {
               // 添加文件
               const script: ScriptItem = {
@@ -152,7 +196,8 @@ export function getAllScripts(): ScriptItem[] {
                 path: dirItem.path,
                 isDirectory: false,
                 keywords: item.keywords,
-                description: item.description
+                description: item.description,
+                disabled: item.disabled // 继承父目录的禁用状态
               }
               result.push(script)
             }
@@ -181,10 +226,13 @@ export function useScripts() {
     addScript,
     removeScript,
     updateScript,
+    toggleScriptDisabled,
     addRule,
     removeRule,
     updateRule,
+    toggleRuleDisabled,
     searchScripts,
+    searchRules,
     getAllScripts
   }
 }

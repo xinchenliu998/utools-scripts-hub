@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useScripts, type RuleItem } from '../../composables/useScripts'
 import RuleItemComponent from './RuleItem.vue'
 import AddRuleDialog from './AddRuleDialog.vue'
 
-const { rules, loadConfig, removeRule } = useScripts()
+const { rules, loadConfig, removeRule, toggleRuleDisabled, searchRules } = useScripts()
 const showAddDialog = ref(false)
 const editingRule = ref<RuleItem | null>(null)
+const searchKeyword = ref('')
+
+const filteredRules = computed(() => {
+  if (!searchKeyword.value.trim()) {
+    return rules.value
+  }
+  return searchRules(searchKeyword.value.trim())
+})
 
 onMounted(() => {
   // 确保 services 已准备好
@@ -37,6 +45,10 @@ function handleDelete(id: string) {
   }
 }
 
+function handleToggleDisabled(id: string) {
+  toggleRuleDisabled(id)
+}
+
 function handleDialogClose() {
   showAddDialog.value = false
   editingRule.value = null
@@ -46,15 +58,19 @@ function handleDialogClose() {
 <template>
   <div class="rule-list-container">
     <div class="header">
-      <h2>规则配置</h2>
-      <button @click="handleAdd" class="add-btn">+ 添加规则</button>
-    </div>
-
-    <div class="rules-info">
-      <p class="info-text">
-        规则用于根据文件后缀或文件名匹配模式，自动指定应用来运行脚本。
-        例如：匹配 <code>\.js$</code> 的文件使用 <code>node</code> 运行。
-      </p>
+      <div class="search-container">
+        <input v-model="searchKeyword" type="text" placeholder="搜索规则（名称、模式、应用、描述）" class="search-input" />
+      </div>
+      <div class="header-actions">
+        <button @click="handleAdd" class="add-btn">+ 添加规则</button>
+        <div class="help-tooltip">
+          <button class="help-btn" aria-label="帮助">?</button>
+          <div class="tooltip-content">
+            规则用于根据文件后缀或文件名匹配模式，自动指定应用来运行脚本。
+            例如：匹配 <code>\.js$</code> 的文件使用 <code>node</code> 运行。
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="rules-container">
@@ -63,22 +79,18 @@ function handleDialogClose() {
         <p class="hint">点击上方按钮添加规则</p>
       </div>
 
+      <div v-else-if="filteredRules.length === 0" class="empty-state">
+        <p>没有找到匹配的规则</p>
+        <p class="hint">尝试使用其他关键词搜索</p>
+      </div>
+
       <div v-else class="rules-list">
-        <RuleItemComponent
-          v-for="rule in rules"
-          :key="rule.id"
-          :rule="rule"
-          @edit="handleEdit"
-          @delete="handleDelete"
-        />
+        <RuleItemComponent v-for="rule in filteredRules" :key="rule.id" :rule="rule" @edit="handleEdit"
+          @delete="handleDelete" @toggleDisabled="handleToggleDisabled" />
       </div>
     </div>
 
-    <AddRuleDialog
-      v-if="showAddDialog"
-      :rule="editingRule"
-      @close="handleDialogClose"
-    />
+    <AddRuleDialog v-if="showAddDialog" :rule="editingRule" @close="handleDialogClose" />
   </div>
 </template>
 
@@ -93,13 +105,80 @@ function handleDialogClose() {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.header h2 {
-  margin: 0;
-  font-size: 18px;
+.search-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.help-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.help-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background-color: #999;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  line-height: 1;
+}
+
+.help-btn:hover {
+  background-color: var(--blue, rgb(88, 164, 246));
+}
+
+.tooltip-content {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background-color: #333;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: normal;
+  width: 280px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+.tooltip-content code {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.help-tooltip:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
 }
 
 .add-btn {
@@ -117,27 +196,19 @@ function handleDialogClose() {
   opacity: 0.8;
 }
 
-.rules-info {
-  margin-bottom: 20px;
-  padding: 12px;
-  background-color: #f0f7ff;
+.search-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
   border-radius: 6px;
-  border: 1px solid #b3d9ff;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
 }
 
-.info-text {
-  margin: 0;
-  font-size: 13px;
-  color: #333;
-  line-height: 1.6;
-}
-
-.info-text code {
-  background-color: #e3f2fd;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
+.search-input:focus {
+  outline: none;
+  border-color: var(--blue, rgb(88, 164, 246));
 }
 
 .rules-container {
@@ -166,22 +237,31 @@ function handleDialogClose() {
 }
 
 @media (prefers-color-scheme: dark) {
-  .header h2 {
+  .help-btn {
+    background-color: #666;
+  }
+
+  .help-btn:hover {
+    background-color: var(--blue, rgb(88, 164, 246));
+  }
+
+  .tooltip-content {
+    background-color: #2d2d2d;
+    border: 1px solid #555;
+  }
+
+  .search-input {
+    background-color: #383838;
+    border-color: #666;
     color: #fff;
   }
 
-  .rules-info {
-    background-color: #1e3a5f;
-    border-color: #3d5a80;
+  .search-input:focus {
+    border-color: var(--blue, rgb(88, 164, 246));
   }
 
-  .info-text {
-    color: #fff;
-  }
-
-  .info-text code {
-    background-color: #2d4a6b;
-    color: #fff;
+  .search-input::placeholder {
+    color: #999;
   }
 }
 </style>

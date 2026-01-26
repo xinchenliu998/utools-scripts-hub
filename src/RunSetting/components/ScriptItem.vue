@@ -9,6 +9,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [script: ScriptItem]
   delete: [id: string]
+  toggleDisabled: [id: string]
 }>()
 
 const showDetails = ref(false)
@@ -24,19 +25,27 @@ function handleEdit() {
 function handleDelete() {
   emit('delete', props.script.id)
 }
+
+function handleToggleDisabled() {
+  emit('toggleDisabled', props.script.id)
+}
 </script>
 
 <template>
-  <div class="script-item">
+  <div class="script-item" :class="{ disabled: script.disabled }">
     <div class="script-header" @click="showDetails = !showDetails">
       <div class="script-info">
         <div class="script-name">
           <span class="icon">{{ script.isDirectory ? '📁' : '📄' }}</span>
           {{ script.name }}
+          <span v-if="script.disabled" class="disabled-badge">已禁用</span>
         </div>
         <div class="script-path">{{ displayPath }}</div>
       </div>
       <div class="script-actions">
+        <button @click.stop="handleToggleDisabled" class="action-btn" :class="script.disabled ? 'enable-btn' : 'disable-btn'">
+          {{ script.disabled ? '启用' : '禁用' }}
+        </button>
         <button @click.stop="handleEdit" class="action-btn">编辑</button>
         <button @click.stop="handleDelete" class="action-btn delete-btn">删除</button>
       </div>
@@ -87,6 +96,15 @@ function handleDelete() {
   gap: 6px;
 }
 
+.disabled-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 3px;
+  font-weight: normal;
+}
+
 .script-name .icon {
   font-size: 16px;
 }
@@ -118,6 +136,26 @@ function handleDelete() {
   opacity: 0.8;
 }
 
+.action-btn.disable-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+}
+
+.action-btn.disable-btn:hover {
+  opacity: 0.8;
+}
+
+.action-btn.enable-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+.action-btn.enable-btn:hover {
+  opacity: 0.8;
+}
+
 .action-btn.delete-btn {
   background-color: #d32f2f;
   color: white;
@@ -126,6 +164,11 @@ function handleDelete() {
 
 .action-btn.delete-btn:hover {
   opacity: 0.8;
+}
+
+.script-item.disabled {
+  opacity: 0.6;
+  background-color: #f5f5f5;
 }
 
 .script-details {
@@ -167,6 +210,10 @@ function handleDelete() {
     color: #fff;
   }
 
+  .disabled-badge {
+    background-color: #ff9800;
+  }
+
   .script-path {
     color: #bbb;
   }
@@ -180,6 +227,26 @@ function handleDelete() {
     opacity: 0.8;
   }
 
+  .action-btn.disable-btn {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+  }
+
+  .action-btn.disable-btn:hover {
+    opacity: 0.8;
+  }
+
+  .action-btn.enable-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+  }
+
+  .action-btn.enable-btn:hover {
+    opacity: 0.8;
+  }
+
   .action-btn.delete-btn {
     background-color: #ff5252;
     color: white;
@@ -188,6 +255,10 @@ function handleDelete() {
 
   .action-btn.delete-btn:hover {
     opacity: 0.8;
+  }
+
+  .script-item.disabled {
+    background-color: #383838;
   }
 
   .script-details {

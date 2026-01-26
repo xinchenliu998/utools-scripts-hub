@@ -9,6 +9,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   edit: [rule: RuleItem]
   delete: [id: string]
+  toggleDisabled: [id: string]
 }>()
 
 const showDetails = ref(false)
@@ -20,19 +21,29 @@ function handleEdit() {
 function handleDelete() {
   emit('delete', props.rule.id)
 }
+
+function handleToggleDisabled() {
+  emit('toggleDisabled', props.rule.id)
+}
 </script>
 
 <template>
-  <div class="rule-item">
+  <div class="rule-item" :class="{ disabled: rule.disabled }">
     <div class="rule-header" @click="showDetails = !showDetails">
       <div class="rule-info">
-        <div class="rule-name">{{ rule.name }}</div>
+        <div class="rule-name">
+          {{ rule.name }}
+          <span v-if="rule.disabled" class="disabled-badge">已禁用</span>
+        </div>
         <div class="rule-pattern">
           <span class="label">匹配模式：</span>
           <code>{{ rule.pattern }}</code>
         </div>
       </div>
       <div class="rule-actions">
+        <button @click.stop="handleToggleDisabled" class="action-btn" :class="rule.disabled ? 'enable-btn' : 'disable-btn'">
+          {{ rule.disabled ? '启用' : '禁用' }}
+        </button>
         <button @click.stop="handleEdit" class="action-btn">编辑</button>
         <button @click.stop="handleDelete" class="action-btn delete-btn">删除</button>
       </div>
@@ -86,6 +97,18 @@ function handleDelete() {
   font-size: 14px;
   margin-bottom: 6px;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.disabled-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  background-color: #ff9800;
+  color: white;
+  border-radius: 3px;
+  font-weight: normal;
 }
 
 .rule-pattern {
@@ -129,6 +152,26 @@ function handleDelete() {
   opacity: 0.8;
 }
 
+.action-btn.disable-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+}
+
+.action-btn.disable-btn:hover {
+  opacity: 0.8;
+}
+
+.action-btn.enable-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+.action-btn.enable-btn:hover {
+  opacity: 0.8;
+}
+
 .action-btn.delete-btn {
   background-color: #d32f2f;
   color: white;
@@ -137,6 +180,11 @@ function handleDelete() {
 
 .action-btn.delete-btn:hover {
   opacity: 0.8;
+}
+
+.rule-item.disabled {
+  opacity: 0.6;
+  background-color: #f5f5f5;
 }
 
 .rule-details {
@@ -186,6 +234,10 @@ function handleDelete() {
     color: #fff;
   }
 
+  .disabled-badge {
+    background-color: #ff9800;
+  }
+
   .rule-pattern {
     color: #bbb;
   }
@@ -204,6 +256,26 @@ function handleDelete() {
     opacity: 0.8;
   }
 
+  .action-btn.disable-btn {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+  }
+
+  .action-btn.disable-btn:hover {
+    opacity: 0.8;
+  }
+
+  .action-btn.enable-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+  }
+
+  .action-btn.enable-btn:hover {
+    opacity: 0.8;
+  }
+
   .action-btn.delete-btn {
     background-color: #ff5252;
     color: white;
@@ -212,6 +284,10 @@ function handleDelete() {
 
   .action-btn.delete-btn:hover {
     opacity: 0.8;
+  }
+
+  .rule-item.disabled {
+    background-color: #383838;
   }
 
   .rule-details {

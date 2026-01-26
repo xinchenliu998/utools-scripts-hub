@@ -19,6 +19,11 @@ function openWithRule(filePath) {
 
   // 查找匹配的规则
   for (const rule of config.rules) {
+    // 跳过已禁用的规则
+    if (rule.disabled) {
+      continue;
+    }
+    
     try {
       const regex = new RegExp(rule.pattern);
       if (regex.test(fileName) || regex.test(ext)) {
