@@ -101,10 +101,10 @@ function handleCancel() {
       <FormItem label="路径：">
         <div class="path-input-group">
           <FormInput v-model="path" :placeholder="isDirectory ? '文件夹路径' : '脚本路径'" />
-          <IconButton v-if="!isDirectory" :icon="UI_ICONS.file" :tooltip="UI_TOOLTIPS.selectFile" variant="primary"
-            @click="handleSelectFile(false)" />
-          <IconButton v-else :icon="UI_ICONS.folder" :tooltip="UI_TOOLTIPS.selectFolder" variant="primary"
-            @click="handleSelectFile(true)" />
+          <IconButton tooltip-position="left" v-if="!isDirectory" :icon="UI_ICONS.file"
+            :tooltip="UI_TOOLTIPS.selectFile" variant="primary" @click="handleSelectFile(false)" />
+          <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="UI_TOOLTIPS.selectFolder"
+            variant="primary" @click="handleSelectFile(true)" />
         </div>
         <div class="folder-option">
           <label class="folder-checkbox">

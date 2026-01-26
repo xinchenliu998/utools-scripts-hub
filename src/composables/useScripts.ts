@@ -90,6 +90,22 @@ export function toggleScriptDisabled(id: string) {
   return false;
 }
 
+// 更新脚本顺序
+export function updateScriptsOrder(newOrder: ScriptItem[]) {
+  // 验证新顺序中的所有 ID 都在原配置中存在
+  const existingIds = new Set(config.value.scripts.map(s => s.id));
+  const newOrderIds = newOrder.map(s => s.id);
+  
+  if (newOrderIds.length !== existingIds.size || 
+      !newOrderIds.every(id => existingIds.has(id))) {
+    console.error("更新脚本顺序失败: ID 不匹配");
+    return false;
+  }
+  
+  config.value.scripts = newOrder;
+  return saveConfig();
+}
+
 // 添加规则
 export function addRule(rule: RuleItem) {
   config.value.rules.push(rule);
@@ -124,6 +140,22 @@ export function toggleRuleDisabled(id: string) {
     return saveConfig();
   }
   return false;
+}
+
+// 更新规则顺序
+export function updateRulesOrder(newOrder: RuleItem[]) {
+  // 验证新顺序中的所有 ID 都在原配置中存在
+  const existingIds = new Set(config.value.rules.map(r => r.id));
+  const newOrderIds = newOrder.map(r => r.id);
+  
+  if (newOrderIds.length !== existingIds.size || 
+      !newOrderIds.every(id => existingIds.has(id))) {
+    console.error("更新规则顺序失败: ID 不匹配");
+    return false;
+  }
+  
+  config.value.rules = newOrder;
+  return saveConfig();
 }
 
 // 搜索规则
@@ -227,10 +259,12 @@ export function useScripts() {
     removeScript,
     updateScript,
     toggleScriptDisabled,
+    updateScriptsOrder,
     addRule,
     removeRule,
     updateRule,
     toggleRuleDisabled,
+    updateRulesOrder,
     searchScripts,
     searchRules,
     getAllScripts,

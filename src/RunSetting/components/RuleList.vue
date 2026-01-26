@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import draggable from 'vuedraggable'
 import { useScripts, type RuleItem } from '@/composables/useScripts'
 import RuleItemComponent from '@/RunSetting/components/RuleItem.vue'
 import AddRuleDialog from '@/RunSetting/components/AddRuleDialog.vue'
@@ -9,7 +10,7 @@ import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import { UI_ICONS, UI_TOOLTIPS, UI_MESSAGES } from '@/constants/ui'
 
-const { rules, loadConfig, removeRule, toggleRuleDisabled, searchRules } = useScripts()
+const { rules, loadConfig, removeRule, toggleRuleDisabled, searchRules, updateRulesOrder } = useScripts()
 const showAddDialog = ref(false)
 const editingRule = ref<RuleItem | null>(null)
 const searchKeyword = ref('')
@@ -19,6 +20,17 @@ const filteredRules = computed(() => {
     return rules.value
   }
   return searchRules(searchKeyword.value.trim())
+})
+
+// 用于拖拽的本地列表（只在非搜索状态下使用）
+const draggableRules = computed({
+  get: () => filteredRules.value,
+  set: (newOrder: RuleItem[]) => {
+    // 只有在非搜索状态下才允许拖拽排序
+    if (!searchKeyword.value.trim()) {
+      updateRulesOrder(newOrder)
+    }
+  }
 })
 
 onMounted(() => {
@@ -57,6 +69,10 @@ function handleDialogClose() {
   showAddDialog.value = false
   editingRule.value = null
 }
+
+function handleDragEnd() {
+  // 拖拽结束后的处理（如果需要可以添加提示）
+}
 </script>
 
 <template>
@@ -79,10 +95,13 @@ function handleDialogClose() {
       <EmptyState v-if="rules.length === 0" :message="UI_MESSAGES.emptyRules" :hint="UI_MESSAGES.emptyRulesHint" />
       <EmptyState v-else-if="filteredRules.length === 0" :message="UI_MESSAGES.noMatchRules"
         :hint="UI_MESSAGES.searchHint" />
-      <div v-else class="rules-list">
-        <RuleItemComponent v-for="(rule, index) in filteredRules" :key="rule.id" :rule="rule" :index="index"
-          :total="filteredRules.length" @edit="handleEdit" @delete="handleDelete" @toggleDisabled="handleToggleDisabled" />
-      </div>
+      <draggable v-else v-model="draggableRules" :disabled="!!searchKeyword.trim()" item-key="id" handle=".rule-header"
+        class="rules-list" @end="handleDragEnd">
+        <template #item="{ element: rule, index }">
+          <RuleItemComponent :rule="rule" :index="index" :total="filteredRules.length" @edit="handleEdit"
+            @delete="handleDelete" @toggleDisabled="handleToggleDisabled" />
+        </template>
+      </draggable>
     </div>
 
     <AddRuleDialog v-if="showAddDialog" :rule="editingRule" @close="handleDialogClose" />
@@ -126,5 +145,13 @@ function handleDialogClose() {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.rules-list .rule-item {
+  cursor: move;
+}
+
+.rules-list .rule-item:active {
+  cursor: grabbing;
 }
 </style>

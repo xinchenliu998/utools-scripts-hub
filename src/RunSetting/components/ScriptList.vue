@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import draggable from 'vuedraggable'
 import { useScripts, type ScriptItem } from '@/composables/useScripts'
 import ScriptItemComponent from '@/RunSetting/components/ScriptItem.vue'
 import AddScriptDialog from '@/RunSetting/components/AddScriptDialog.vue'
@@ -9,7 +10,7 @@ import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import { UI_ICONS, UI_TOOLTIPS, UI_MESSAGES } from '@/constants/ui'
 
-const { scripts, loadConfig, removeScript, toggleScriptDisabled } = useScripts()
+const { scripts, loadConfig, removeScript, toggleScriptDisabled, updateScriptsOrder } = useScripts()
 const showAddDialog = ref(false)
 const editingScript = ref<ScriptItem | null>(null)
 const searchKeyword = ref('')
@@ -26,6 +27,17 @@ const filteredScripts = computed(() => {
     const keywordsMatch = script.keywords?.some(k => k.toLowerCase().includes(lowerKeyword))
     return nameMatch || pathMatch || descMatch || keywordsMatch
   })
+})
+
+// 用于拖拽的本地列表（只在非搜索状态下使用）
+const draggableScripts = computed({
+  get: () => filteredScripts.value,
+  set: (newOrder: ScriptItem[]) => {
+    // 只有在非搜索状态下才允许拖拽排序
+    if (!searchKeyword.value.trim()) {
+      updateScriptsOrder(newOrder)
+    }
+  }
 })
 
 onMounted(() => {
@@ -64,6 +76,10 @@ function handleDialogClose() {
   showAddDialog.value = false
   editingScript.value = null
 }
+
+function handleDragEnd() {
+  // 拖拽结束后的处理（如果需要可以添加提示）
+}
 </script>
 
 <template>
@@ -88,11 +104,13 @@ function handleDialogClose() {
         :hint="UI_MESSAGES.emptyScriptsHint" />
       <EmptyState v-else-if="filteredScripts.length === 0" :message="UI_MESSAGES.noMatchScripts"
         :hint="UI_MESSAGES.searchHint" />
-      <div v-else class="scripts-list">
-        <ScriptItemComponent v-for="(script, index) in filteredScripts" :key="script.id" :script="script"
-          :index="index" :total="filteredScripts.length" @edit="handleEdit" @delete="handleDelete"
-          @toggleDisabled="handleToggleDisabled" />
-      </div>
+      <draggable v-else v-model="draggableScripts" :disabled="!!searchKeyword.trim()" item-key="id"
+        handle=".script-header" class="scripts-list" @end="handleDragEnd">
+        <template #item="{ element: script, index }">
+          <ScriptItemComponent :script="script" :index="index" :total="filteredScripts.length" @edit="handleEdit"
+            @delete="handleDelete" @toggleDisabled="handleToggleDisabled" />
+        </template>
+      </draggable>
     </div>
 
     <AddScriptDialog v-if="showAddDialog" :script="editingScript" @close="handleDialogClose" />
@@ -136,5 +154,13 @@ function handleDialogClose() {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.scripts-list .script-item {
+  cursor: move;
+}
+
+.scripts-list .script-item:active {
+  cursor: grabbing;
 }
 </style>

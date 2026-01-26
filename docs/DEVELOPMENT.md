@@ -10,6 +10,7 @@
 - **语言**: TypeScript 5.x
 - **依赖管理**: pnpm / npm
 - **类型定义**: utools-api-types
+- **拖拽排序**: vuedraggable (开发依赖)
 
 ## 🛠️ 开发环境搭建
 
@@ -158,9 +159,11 @@ utools-scripts-hub/
 **核心文件**:
 
 - `src/App.vue`: 主应用组件，负责路由管理
-- `src/composables/useScripts.ts`: 脚本和规则的状态管理
+- `src/composables/useScripts.ts`: 脚本和规则的状态管理（包括拖拽排序功能）
 - `src/Run/index.vue`: 运行脚本界面
 - `src/RunSetting/index.vue`: 设置界面
+- `src/RunSetting/components/ScriptList.vue`: 脚本列表组件（支持拖拽排序）
+- `src/RunSetting/components/RuleList.vue`: 规则列表组件（支持拖拽排序）
 
 ### 3. 数据流
 
@@ -347,10 +350,16 @@ function readConfig() {
 - `removeScript(id)`: 删除脚本
 - `updateScript(id, updates)`: 更新脚本
 - `toggleScriptDisabled(id)`: 切换脚本禁用状态
+- `updateScriptsOrder(newOrder)`: 更新脚本顺序（用于拖拽排序）
+  - 参数: `newOrder` - 新的脚本顺序数组
+  - 返回: `boolean` - 是否成功
 - `addRule(rule)`: 添加规则
 - `removeRule(id)`: 删除规则
 - `updateRule(id, updates)`: 更新规则
 - `toggleRuleDisabled(id)`: 切换规则禁用状态
+- `updateRulesOrder(newOrder)`: 更新规则顺序（用于拖拽排序）
+  - 参数: `newOrder` - 新的规则顺序数组
+  - 返回: `boolean` - 是否成功
 - `searchScripts(keyword)`: 搜索脚本（自动过滤禁用的脚本）
 - `searchRules(keyword)`: 搜索规则
 - `getAllScripts()`: 获取所有脚本（扁平化，包括文件夹中的脚本，自动过滤禁用的脚本）

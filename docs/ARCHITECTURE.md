@@ -245,8 +245,10 @@ interface RuleItem {
 - 配置的加载和保存
 - 脚本的 CRUD 操作
 - 脚本启用/禁用切换（`toggleScriptDisabled`）
+- 脚本顺序更新（`updateScriptsOrder`，用于拖拽排序）
 - 规则的 CRUD 操作
 - 规则启用/禁用切换（`toggleRuleDisabled`）
+- 规则顺序更新（`updateRulesOrder`，用于拖拽排序）
 - 脚本搜索（支持文件名、路径、描述匹配）
 - 脚本扁平化（处理文件夹嵌套，自动过滤禁用的脚本和文件夹）
 
@@ -271,10 +273,10 @@ interface RuleItem {
 **职责**: 脚本和规则的管理
 
 **子组件**:
-- `ScriptList.vue`: 脚本列表展示
+- `ScriptList.vue`: 脚本列表展示（支持拖拽排序，使用 vuedraggable）
 - `ScriptItem.vue`: 单个脚本项
 - `AddScriptDialog.vue`: 添加/编辑脚本对话框
-- `RuleList.vue`: 规则列表展示
+- `RuleList.vue`: 规则列表展示（支持拖拽排序，使用 vuedraggable）
 - `RuleItem.vue`: 单个规则项
 - `AddRuleDialog.vue`: 添加/编辑规则对话框
 
@@ -455,6 +457,39 @@ export function useScripts() {
 const config = ref<Config>({ scripts: [], rules: [] })
 ```
 
+### 6. 拖拽排序功能
+
+使用 `vuedraggable` 库实现列表项的拖拽排序功能：
+
+**实现位置**:
+- `ScriptList.vue`: 脚本列表拖拽排序
+- `RuleList.vue`: 规则列表拖拽排序
+
+**核心机制**:
+1. 使用 `vuedraggable` 组件包裹列表项
+2. 通过 `computed` 属性的 `get/set` 实现双向绑定
+3. 拖拽时更新本地状态，拖拽结束后调用 `updateScriptsOrder` 或 `updateRulesOrder` 保存配置
+4. 搜索状态下自动禁用拖拽功能，避免误操作
+
+**关键代码**:
+```typescript
+// 用于拖拽的本地列表（只在非搜索状态下使用）
+const draggableScripts = computed({
+  get: () => filteredScripts.value,
+  set: (newOrder: ScriptItem[]) => {
+    // 只有在非搜索状态下才允许拖拽排序
+    if (!searchKeyword.value.trim()) {
+      updateScriptsOrder(newOrder)
+    }
+  }
+})
+```
+
+**注意事项**:
+- 规则顺序非常重要，因为规则按顺序匹配，找到第一个匹配的规则即停止
+- 脚本顺序影响运行界面中的显示顺序
+- 搜索状态下拖拽功能自动禁用，防止误操作
+
 ## 🔧 扩展点
 
 ### 添加新的文件打开方式
@@ -536,7 +571,6 @@ export function searchScripts(keyword: string) {
    - 快捷键自定义
 
 3. **用户体验**
-   - 拖拽排序
    - 批量操作
    - 导入/导出配置
    - 主题切换
