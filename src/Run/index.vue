@@ -73,7 +73,24 @@ function collectFilesFromFolder(folder: ScriptItem, excludeFolders: string[]): S
 function collectAllFiles(allScripts: ScriptItem[]): ScriptItem[] {
   const defaultExcludeFolders = getDefaultExcludeFolders()
   const result: ScriptItem[] = []
+  // 独立脚本 Map：路径 -> 脚本对象（包含 disabled 状态）
+  const independentScripts = new Map<string, ScriptItem>()
 
+  // 第一步：收集所有独立脚本（非文件夹）的路径和配置
+  for (const script of allScripts) {
+    if (!script.isDirectory) {
+      independentScripts.set(script.path, script)
+    }
+  }
+
+  // 第二步：添加未被禁用的独立脚本到结果集
+  for (const script of allScripts) {
+    if (!script.isDirectory && !script.disabled) {
+      result.push(script)
+    }
+  }
+
+  // 第三步：收集文件夹中的文件（排除已在独立脚本中或被独立脚本禁用的）
   for (const script of allScripts) {
     if (script.disabled) continue
 
@@ -82,10 +99,13 @@ function collectAllFiles(allScripts: ScriptItem[]): ScriptItem[] {
       const scriptExcludeFolders = script.excludeFolders || defaultExcludeFolders
       // 遍历文件夹
       const folderFiles = collectFilesFromFolder(script, scriptExcludeFolders)
-      result.push(...folderFiles)
-    } else {
-      // 直接添加文件
-      result.push(script)
+
+      for (const file of folderFiles) {
+        // 如果该文件在独立脚本中存在，跳过（独立脚本优先，包括禁用状态）
+        if (!independentScripts.has(file.path)) {
+          result.push(file)
+        }
+      }
     }
   }
 
