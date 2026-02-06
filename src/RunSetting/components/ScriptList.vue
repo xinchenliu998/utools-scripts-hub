@@ -9,19 +9,13 @@ import EmptyState from '@/RunSetting/components/common/EmptyState.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
-import { useSettings } from '@/composables/useSettings'
+import { useI18n } from '@/utils/i18n'
 
 const { scripts, loadConfig, removeScript, toggleScriptDisabled, updateScriptsOrder } = useScripts()
-const { settings } = useSettings()
 const showAddDialog = ref(false)
 const editingScript = ref<ScriptItem | null>(null)
 const searchKeyword = ref('')
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 const filteredScripts = computed(() => {
   if (!searchKeyword.value.trim()) {
@@ -71,7 +65,7 @@ function handleEdit(script: ScriptItem) {
 }
 
 function handleDelete(id: string) {
-  if (window.confirm(t().UI_MESSAGES.confirmDeleteScript)) {
+  if (window.confirm(t.UI_MESSAGES.confirmDeleteScript)) {
     removeScript(id)
   }
 }
@@ -94,22 +88,22 @@ function handleDragEnd() {
   <div class="script-list-container">
     <div class="header">
       <div class="search-container">
-        <SearchInput v-model="searchKeyword" :placeholder="t().PLACEHOLDERS.searchScript" />
+        <SearchInput v-model="searchKeyword" :placeholder="t.PLACEHOLDERS.searchScript" />
       </div>
       <div class="header-actions">
-        <IconButton :icon="UI_ICONS.add" :tooltip="t().UI_TOOLTIPS.addScript" variant="primary" tooltip-position="left"
+        <IconButton :icon="UI_ICONS.add" :tooltip="t.UI_TOOLTIPS.addScript" variant="primary" tooltip-position="left"
           @click="handleAdd" />
         <HelpTooltip>
-          {{ t().HINTS.scriptHelp }}
+          {{ t.HINTS.scriptHelp }}
         </HelpTooltip>
       </div>
     </div>
 
     <div class="scripts-container">
-      <EmptyState v-if="scripts.length === 0" :message="t().UI_MESSAGES.emptyScripts"
-        :hint="t().UI_MESSAGES.emptyScriptsHint" />
-      <EmptyState v-else-if="filteredScripts.length === 0" :message="t().UI_MESSAGES.noMatchScripts"
-        :hint="t().UI_MESSAGES.searchHint" />
+      <EmptyState v-if="scripts.length === 0" :message="t.UI_MESSAGES.emptyScripts"
+        :hint="t.UI_MESSAGES.emptyScriptsHint" />
+      <EmptyState v-else-if="filteredScripts.length === 0" :message="t.UI_MESSAGES.noMatchScripts"
+        :hint="t.UI_MESSAGES.searchHint" />
       <draggable v-else v-model="draggableScripts" :disabled="!!searchKeyword.trim()" item-key="id"
         handle=".script-header" class="scripts-list" @end="handleDragEnd">
         <template #item="{ element: script, index }">

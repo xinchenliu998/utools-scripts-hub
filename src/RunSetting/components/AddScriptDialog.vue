@@ -6,9 +6,8 @@ import FormItem from './common/FormItem.vue'
 import FormInput from './common/FormInput.vue'
 import IconButton from './common/IconButton.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
+import { useI18n } from '@/utils/i18n'
 import type { OpenDialogOptions } from '@/types/global'
-import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps<{
   script?: ScriptItem | null
@@ -19,12 +18,7 @@ const emit = defineEmits<{
 }>()
 
 const { addScript, updateScript } = useScripts()
-const { settings } = useSettings()
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 const name = ref('')
 const path = ref('')
@@ -50,7 +44,7 @@ onMounted(() => {
 
 function handleSelectFile(selectAsDirectory: boolean) {
   const dialogOptions: OpenDialogOptions = {
-    title: selectAsDirectory ? t().DIALOG_OPTIONS.selectFolder.title : t().DIALOG_OPTIONS.selectFile.title
+    title: selectAsDirectory ? t.DIALOG_OPTIONS.selectFolder.title : t.DIALOG_OPTIONS.selectFile.title
   }
 
   if (selectAsDirectory) {
@@ -71,12 +65,12 @@ function handleSelectFile(selectAsDirectory: boolean) {
 
 function handleSave() {
   if (!name.value || !path.value) {
-    window.utools.showNotification(t().NOTIFICATIONS.scriptNameRequired)
+    window.utools.showNotification(t.NOTIFICATIONS.scriptNameRequired)
     return
   }
 
   if (!window.services.pathExists(path.value)) {
-    window.utools.showNotification(t().NOTIFICATIONS.pathNotExists)
+    window.utools.showNotification(t.NOTIFICATIONS.pathNotExists)
     return
   }
 
@@ -94,10 +88,10 @@ function handleSave() {
 
   if (isEditing.value && props.script) {
     updateScript(props.script.id, scriptData)
-    window.utools.showNotification(t().NOTIFICATIONS.scriptUpdated)
+    window.utools.showNotification(t.NOTIFICATIONS.scriptUpdated)
   } else {
     addScript(scriptData)
-    window.utools.showNotification(t().NOTIFICATIONS.scriptAdded)
+    window.utools.showNotification(t.NOTIFICATIONS.scriptAdded)
   }
 
   emit('close')
@@ -109,45 +103,45 @@ function handleCancel() {
 </script>
 
 <template>
-  <BaseDialog :title="isEditing ? t().DIALOG_TITLES.editScriptTitle : t().DIALOG_TITLES.addScriptTitle" @close="handleCancel">
+  <BaseDialog :title="isEditing ? t.DIALOG_TITLES.editScriptTitle : t.DIALOG_TITLES.addScriptTitle" @close="handleCancel">
     <template #default>
-      <FormItem :label="t().FORM_LABELS.scriptName">
-        <FormInput v-model="name" :placeholder="t().PLACEHOLDERS.scriptName" />
+      <FormItem :label="t.FORM_LABELS.scriptName">
+        <FormInput v-model="name" :placeholder="t.PLACEHOLDERS.scriptName" />
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.scriptPath">
+      <FormItem :label="t.FORM_LABELS.scriptPath">
         <div class="path-input-group">
-          <FormInput v-model="path" :placeholder="isDirectory ? t().FORM_LABELS.scriptFolderPath : t().FORM_LABELS.scriptFilePath" />
+          <FormInput v-model="path" :placeholder="isDirectory ? t.FORM_LABELS.scriptFolderPath : t.FORM_LABELS.scriptFilePath" />
           <IconButton tooltip-position="left" v-if="!isDirectory" :icon="UI_ICONS.file"
-            :tooltip="t().UI_TOOLTIPS.selectFile" variant="primary" @click="handleSelectFile(false)" />
-          <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="t().UI_TOOLTIPS.selectFolder"
+            :tooltip="t.UI_TOOLTIPS.selectFile" variant="primary" @click="handleSelectFile(false)" />
+          <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="t.UI_TOOLTIPS.selectFolder"
             variant="primary" @click="handleSelectFile(true)" />
         </div>
         <div class="folder-row">
           <label class="folder-checkbox">
             <input v-model="isDirectory" type="checkbox" />
-            <span>{{ t().FORM_LABELS.scriptFolder }}</span>
+            <span>{{ t.FORM_LABELS.scriptFolder }}</span>
           </label>
           <label v-if="isDirectory" class="folder-checkbox">
             <input v-model="recursive" type="checkbox" />
-            <span>{{ t().FORM_LABELS.scriptRecursive }}</span>
+            <span>{{ t.FORM_LABELS.scriptRecursive }}</span>
           </label>
         </div>
         <div v-if="isDirectory" class="folder-options">
-          <FormItem :label="t().FORM_LABELS.scriptExclude">
-            <FormInput v-model="excludeFolders" :placeholder="t().PLACEHOLDERS.excludeFolders" />
+          <FormItem :label="t.FORM_LABELS.scriptExclude">
+            <FormInput v-model="excludeFolders" :placeholder="t.PLACEHOLDERS.excludeFolders" />
           </FormItem>
         </div>
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.scriptDescriptionLabel">
-        <FormInput v-model="description" type="textarea" :placeholder="t().PLACEHOLDERS.scriptDescription" :rows="3" />
+      <FormItem :label="t.FORM_LABELS.scriptDescriptionLabel">
+        <FormInput v-model="description" type="textarea" :placeholder="t.PLACEHOLDERS.scriptDescription" :rows="3" />
       </FormItem>
     </template>
 
     <template #footer>
-      <IconButton :icon="UI_ICONS.cancel" :tooltip="t().UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
-      <IconButton :icon="UI_ICONS.save" :tooltip="t().UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="t.UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="t.UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
     </template>
   </BaseDialog>
 </template>

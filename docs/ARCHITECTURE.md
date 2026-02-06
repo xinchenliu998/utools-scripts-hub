@@ -235,6 +235,25 @@ interface RuleItem {
   description?: string
   disabled?: boolean    // 是否禁用（禁用的规则不会参与匹配）
 }
+
+interface Settings {
+  locale: 'zh-CN' | 'en-US'       // 语言设置
+  defaultExcludeFolders: string[]  // 默认排除的文件夹
+  themeColor: string               // 主题色
+  buttonColors: {                  // 按钮颜色配置
+    primary: string
+    danger: string
+    warning: string
+    success: string
+    default: string
+  }
+}
+
+interface Config {
+  scripts: ScriptItem[]
+  rules: RuleItem[]
+  settings?: Settings  // 用户设置
+}
 ```
 
 **类型定义位置**:
@@ -252,7 +271,55 @@ interface RuleItem {
 - 脚本搜索（支持文件名、路径、描述匹配）
 - 脚本扁平化（处理文件夹嵌套，自动过滤禁用的脚本和文件夹）
 
-#### 2.3 运行界面 (Run/index.vue)
+#### 2.3 状态管理 - 设置 (useSettings.ts)
+
+**职责**: 用户设置的统一状态管理
+
+**核心数据结构**:
+```typescript
+interface ButtonColors {
+  primary: string
+  danger: string
+  warning: string
+  success: string
+  default: string
+}
+
+interface Settings {
+  locale: 'zh-CN' | 'en-US'
+  defaultExcludeFolders: string[]
+  themeColor: string
+  buttonColors: ButtonColors
+}
+```
+
+**核心功能**:
+- 设置的加载和保存
+- 语言切换（中英文）
+- 主题色更新
+- 按钮颜色自定义
+- 排除文件夹管理
+- 设置重置为默认值
+
+**设计特点**:
+- 设置与 config 配置合并存储
+- 自动应用颜色到 CSS 变量
+- 延迟加载确保 services 已准备好
+
+#### 2.4 国际化 (i18n.ts)
+
+**职责**: 提供统一的翻译函数
+
+**核心功能**:
+- 根据当前语言设置返回对应的翻译对象
+- 使用 reactive 确保语言切换时响应式更新
+- 统一的翻译接口 `t.xxx`
+
+**支持的语言**:
+- `zh-CN`: 中文
+- `en-US`: 英文
+
+#### 2.5 运行界面 (Run/index.vue)
 
 **职责**: 脚本搜索和运行
 
@@ -268,7 +335,7 @@ interface RuleItem {
 3. 路径包含匹配
 4. 描述包含匹配
 
-#### 2.4 设置界面 (RunSetting/index.vue)
+#### 2.6 设置界面 (RunSetting/index.vue)
 
 **职责**: 脚本和规则的管理
 
@@ -292,6 +359,22 @@ interface RuleItem {
 
 **常量文件**:
 - `src/constants/ui.ts`: UI相关常量（颜色、尺寸、图标、提示文字等）
+
+**工具函数**:
+- `src/utils/i18n.ts`: i18n 工具函数（提供统一的翻译函数）
+- `src/utils/tooltip.ts`: tooltip 位置计算工具
+
+**国际化**:
+- `src/locales/index.ts`: 语言包入口（支持 zh-CN、en-US）
+- `src/locales/zh-CN.ts`: 中文语言包
+- `src/locales/en-US.ts`: 英文语言包
+
+**设置管理**:
+- `src/composables/useSettings.ts`: 设置管理（语言、主题色、按钮颜色、排除文件夹）
+- `src/RunSetting/components/SettingsDialog.vue`: 设置对话框
+- `src/RunSetting/components/settings/AppearanceTab.vue`: 外观设置（语言选择、主题色）
+- `src/RunSetting/components/settings/ExcludeTab.vue`: 排除文件夹设置
+- `src/RunSetting/components/settings/ButtonsTab.vue`: 按钮颜色设置
 
 ## 🔄 数据流
 

@@ -6,8 +6,7 @@ import FormItem from './common/FormItem.vue'
 import FormInput from './common/FormInput.vue'
 import IconButton from './common/IconButton.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
-import { useSettings } from '@/composables/useSettings'
+import { useI18n } from '@/utils/i18n'
 
 const props = defineProps<{
   rule?: RuleItem | null
@@ -18,15 +17,10 @@ const emit = defineEmits<{
 }>()
 
 const { addRule, updateRule } = useScripts()
-const { settings } = useSettings()
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 // 当前语言的模板列表
-const templates = computed(() => t().RULE_TEMPLATES)
+const templates = computed(() => t.RULE_TEMPLATES)
 
 const name = ref('')
 const pattern = ref('')
@@ -49,14 +43,14 @@ onMounted(() => {
 
 function handleSave() {
   if (!name.value || !pattern.value) {
-    window.utools.showNotification(t().NOTIFICATIONS.ruleNameRequired)
+    window.utools.showNotification(t.NOTIFICATIONS.ruleNameRequired)
     return
   }
 
   try {
     new RegExp(pattern.value)
   } catch (e) {
-    window.utools.showNotification(t().NOTIFICATIONS.invalidPattern)
+    window.utools.showNotification(t.NOTIFICATIONS.invalidPattern)
     return
   }
 
@@ -71,10 +65,10 @@ function handleSave() {
 
   if (isEditing.value && props.rule) {
     updateRule(props.rule.id, ruleData)
-    window.utools.showNotification(t().NOTIFICATIONS.ruleUpdated)
+    window.utools.showNotification(t.NOTIFICATIONS.ruleUpdated)
   } else {
     addRule(ruleData)
-    window.utools.showNotification(t().NOTIFICATIONS.ruleAdded)
+    window.utools.showNotification(t.NOTIFICATIONS.ruleAdded)
   }
 
   emit('close')
@@ -104,11 +98,11 @@ function applyTemplate() {
 </script>
 
 <template>
-  <BaseDialog :title="isEditing ? t().DIALOG_TITLES.editRuleTitle : t().DIALOG_TITLES.addRuleTitle" @close="handleCancel">
+  <BaseDialog :title="isEditing ? t.DIALOG_TITLES.editRuleTitle : t.DIALOG_TITLES.addRuleTitle" @close="handleCancel">
     <template #default>
       <div class="templates-section" v-if="!isEditing">
         <div class="template-form-item">
-          <label>{{ t().FORM_LABELS_EXTRA.quickTemplateLabel }}</label>
+          <label>{{ t.FORM_LABELS_EXTRA.quickTemplateLabel }}</label>
           <select v-model="selectedTemplate" @change="applyTemplate" class="template-select">
             <option v-for="template in templates" :key="template.name || 'none'" :value="template.name">
               {{ template.label || template.name }}
@@ -117,30 +111,30 @@ function applyTemplate() {
         </div>
       </div>
 
-      <FormItem :label="t().FORM_LABELS.ruleName">
-        <FormInput v-model="name" :placeholder="t().PLACEHOLDERS.ruleName" />
+      <FormItem :label="t.FORM_LABELS.ruleName">
+        <FormInput v-model="name" :placeholder="t.PLACEHOLDERS.ruleName" />
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.rulePattern" :hint="t().FORM_LABELS.rulePatternHint">
-        <FormInput v-model="pattern" :placeholder="t().PLACEHOLDERS.rulePattern" />
+      <FormItem :label="t.FORM_LABELS.rulePattern" :hint="t.FORM_LABELS.rulePatternHint">
+        <FormInput v-model="pattern" :placeholder="t.PLACEHOLDERS.rulePattern" />
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.ruleApp" :hint="t().FORM_LABELS.ruleAppHint">
-        <FormInput v-model="app" :placeholder="t().PLACEHOLDERS.ruleApp" />
+      <FormItem :label="t.FORM_LABELS.ruleApp" :hint="t.FORM_LABELS.ruleAppHint">
+        <FormInput v-model="app" :placeholder="t.PLACEHOLDERS.ruleApp" />
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.ruleArgs">
-        <FormInput v-model="args" :placeholder="t().PLACEHOLDERS.ruleArgs" />
+      <FormItem :label="t.FORM_LABELS.ruleArgs">
+        <FormInput v-model="args" :placeholder="t.PLACEHOLDERS.ruleArgs" />
       </FormItem>
 
-      <FormItem :label="t().FORM_LABELS.ruleDescription">
-        <FormInput v-model="description" type="textarea" :placeholder="t().FORM_LABELS_EXTRA.ruleDescriptionPlaceholder" :rows="2" />
+      <FormItem :label="t.FORM_LABELS.ruleDescription">
+        <FormInput v-model="description" type="textarea" :placeholder="t.FORM_LABELS_EXTRA.ruleDescriptionPlaceholder" :rows="2" />
       </FormItem>
     </template>
 
     <template #footer>
-      <IconButton :icon="UI_ICONS.cancel" :tooltip="t().UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
-      <IconButton :icon="UI_ICONS.save" :tooltip="t().UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="t.UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="t.UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
     </template>
   </BaseDialog>
 </template>

@@ -4,7 +4,7 @@ import { useScripts, getAllScripts, type ScriptItem } from '@/composables/useScr
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
+import { useI18n } from '@/utils/i18n'
 import { useSettings } from '@/composables/useSettings'
 
 import type { EnterAction } from '@/types/global'
@@ -14,16 +14,12 @@ defineProps<{
 }>()
 
 const { loadConfig, searchScripts } = useScripts()
-const { settings, loadSettings } = useSettings()
+const { loadSettings } = useSettings()
+const { t } = useI18n()
 
 const keyword = ref('')
 const selectedIndex = ref(0)
 const scripts = ref<ScriptItem[]>([])
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
 
 // 加载配置
 onMounted(() => {
@@ -83,7 +79,7 @@ async function executeScript(script: ScriptItem) {
   try {
     // 检查文件是否存在
     if (!window.services.pathExists(script.path)) {
-      window.utools.showNotification(`${t().NOTIFICATIONS.fileNotExists}${script.path}`)
+      window.utools.showNotification(`${t.NOTIFICATIONS.fileNotExists}${script.path}`)
       return
     }
 
@@ -94,7 +90,7 @@ async function executeScript(script: ScriptItem) {
     // window.utools.outPlugin()
   } catch (error: unknown) {
     const err = error as { error?: string; message?: string }
-    window.utools.showNotification(`${t().NOTIFICATIONS.openFailed}${err.error || err.message || '未知错误'}`)
+    window.utools.showNotification(`${t.NOTIFICATIONS.openFailed}${err.error || err.message || '未知错误'}`)
   }
 }
 
@@ -115,11 +111,11 @@ onMounted(() => {
 <template>
   <div class="run-container" @keydown="handleKeyDown" tabindex="0">
     <div class="search-section">
-      <input v-model="keyword" type="text" class="search-input" :placeholder="t().PLACEHOLDERS.searchScriptRun" autofocus />
-      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="t().UI_TOOLTIPS.run" variant="primary"
+      <input v-model="keyword" type="text" class="search-input" :placeholder="t.PLACEHOLDERS.searchScriptRun" autofocus />
+      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="t.UI_TOOLTIPS.run" variant="primary"
         tooltip-position="left" @click="executeScript(selectedScript)" />
       <HelpTooltip>
-        {{ t().HINTS.runHelp }}
+        {{ t.HINTS.runHelp }}
       </HelpTooltip>
     </div>
 
@@ -136,8 +132,8 @@ onMounted(() => {
     </div>
 
     <div class="empty-state" v-else>
-      <p>{{ t().HINTS.noMatchScript }}</p>
-      <p class="hint">{{ t().HINTS.addScriptKeyword }}</p>
+      <p>{{ t.HINTS.noMatchScript }}</p>
+      <p class="hint">{{ t.HINTS.addScriptKeyword }}</p>
     </div>
   </div>
 </template>

@@ -2,8 +2,8 @@
 import { ref, computed } from 'vue'
 import type { RuleItem } from '@/composables/useScripts'
 import ActionButtons from '@/RunSetting/components/common/ActionButtons.vue'
-import { zhCN, enUS } from '@/locales'
-import { useSettings } from '@/composables/useSettings'
+import { useI18n } from '@/utils/i18n'
+import { calculateTooltipPosition } from '@/utils/tooltip'
 
 const props = defineProps<{
   rule: RuleItem
@@ -17,25 +17,12 @@ const emit = defineEmits<{
   toggleDisabled: [id: string]
 }>()
 
-const { settings } = useSettings()
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 const showDetails = ref(false)
 
 const tooltipPosition = computed(() => {
-  const index = props.index ?? 0
-  const total = props.total ?? 1
-  // 第一项（索引0）在下面显示，最后一项在上面显示
-  if (index === 0) {
-    return 'bottom'
-  } else if (index === total - 1) {
-    return 'top'
-  }
-  return 'bottom'
+  return calculateTooltipPosition(props.index ?? 0, props.total ?? 1)
 })
 
 function handleEdit() {
@@ -57,10 +44,10 @@ function handleToggle() {
       <div class="rule-info">
         <div class="rule-name">
           {{ rule.name }}
-          <span v-if="rule.disabled" class="disabled-badge">{{ t().STATUS_LABELS.disabled }}</span>
+          <span v-if="rule.disabled" class="disabled-badge">{{ t.STATUS_LABELS.disabled }}</span>
         </div>
         <div class="rule-pattern">
-          <span class="label">{{ t().FORM_LABELS.rulePattern }}</span>
+          <span class="label">{{ t.FORM_LABELS.rulePattern }}</span>
           <code>{{ rule.pattern }}</code>
         </div>
       </div>
@@ -70,15 +57,15 @@ function handleToggle() {
 
     <div v-if="showDetails" class="rule-details">
       <div class="detail-item" v-if="rule.app">
-        <label>{{ t().FORM_LABELS.ruleApp }}</label>
+        <label>{{ t.FORM_LABELS.ruleApp }}</label>
         <code>{{ rule.app }}</code>
       </div>
       <div class="detail-item" v-if="rule.args && rule.args.length > 0">
-        <label>{{ t().FORM_LABELS.ruleArgs }}</label>
+        <label>{{ t.FORM_LABELS.ruleArgs }}</label>
         <code>{{ rule.args.join(' ') }}</code>
       </div>
       <div class="detail-item" v-if="rule.description">
-        <label>{{ t().FORM_LABELS.ruleDescription }}</label>
+        <label>{{ t.FORM_LABELS.ruleDescription }}</label>
         <span>{{ rule.description }}</span>
       </div>
     </div>

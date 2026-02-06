@@ -2,8 +2,7 @@
 import { computed } from 'vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
-import { useSettings } from '@/composables/useSettings'
+import { useI18n } from '@/utils/i18n'
 
 const props = defineProps<{
   disabled?: boolean
@@ -19,19 +18,14 @@ const emit = defineEmits<{
   toggle: []
 }>()
 
-const { settings } = useSettings()
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 const toggleIcon = computed(() => {
   return props.disabled ? UI_ICONS.enable : UI_ICONS.disable
 })
 
 const toggleTooltip = computed(() => {
-  return props.disabled ? t().UI_TOOLTIPS.enable : t().UI_TOOLTIPS.disable
+  return props.disabled ? t.UI_TOOLTIPS.enable : t.UI_TOOLTIPS.disable
 })
 
 const toggleVariant = computed(() => {
@@ -43,9 +37,9 @@ const toggleVariant = computed(() => {
   <div class="action-buttons" @click.stop>
     <IconButton v-if="showToggle" :icon="toggleIcon" :tooltip="toggleTooltip" :variant="toggleVariant"
       :tooltip-position="tooltipPosition" @click="emit('toggle')" />
-    <IconButton v-if="showEdit" :icon="UI_ICONS.edit" :tooltip="t().UI_TOOLTIPS.edit" variant="primary"
+    <IconButton v-if="showEdit" :icon="UI_ICONS.edit" :tooltip="t.UI_TOOLTIPS.edit" variant="primary"
       :tooltip-position="tooltipPosition" @click="emit('edit')" />
-    <IconButton v-if="showDelete" :icon="UI_ICONS.delete" :tooltip="t().UI_TOOLTIPS.delete" variant="danger"
+    <IconButton v-if="showDelete" :icon="UI_ICONS.delete" :tooltip="t.UI_TOOLTIPS.delete" variant="danger"
       :tooltip-position="tooltipPosition" @click="emit('delete')" />
   </div>
 </template>

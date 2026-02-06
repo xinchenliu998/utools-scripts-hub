@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import type { ScriptItem } from '@/composables/useScripts'
 import ActionButtons from '@/RunSetting/components/common/ActionButtons.vue'
 import { UI_ICONS } from '@/constants/ui'
-import { zhCN, enUS } from '@/locales'
-import { useSettings } from '@/composables/useSettings'
+import { useI18n } from '@/utils/i18n'
+import { calculateTooltipPosition } from '@/utils/tooltip'
 
 const props = defineProps<{
   script: ScriptItem
@@ -18,12 +18,7 @@ const emit = defineEmits<{
   toggleDisabled: [id: string]
 }>()
 
-const { settings } = useSettings()
-
-// 获取当前语言的翻译
-function t() {
-  return settings.value.locale === 'en-US' ? enUS : zhCN
-}
+const { t } = useI18n()
 
 const showDetails = ref(false)
 
@@ -32,15 +27,7 @@ const displayPath = computed(() => {
 })
 
 const tooltipPosition = computed(() => {
-  const index = props.index ?? 0
-  const total = props.total ?? 1
-  // 第一项（索引0）在下面显示，最后一项在上面显示
-  if (index === 0) {
-    return 'bottom'
-  } else if (index === total - 1) {
-    return 'top'
-  }
-  return 'bottom'
+  return calculateTooltipPosition(props.index ?? 0, props.total ?? 1)
 })
 
 function handleEdit() {
@@ -63,7 +50,7 @@ function handleToggle() {
         <div class="script-name">
           <span class="icon">{{ script.isDirectory ? UI_ICONS.folder : UI_ICONS.file }}</span>
           {{ script.name }}
-          <span v-if="script.disabled" class="disabled-badge">{{ t().STATUS_LABELS.disabled }}</span>
+          <span v-if="script.disabled" class="disabled-badge">{{ t.STATUS_LABELS.disabled }}</span>
         </div>
         <div class="script-path">{{ displayPath }}</div>
       </div>
@@ -73,7 +60,7 @@ function handleToggle() {
 
     <div v-if="showDetails" class="script-details">
       <div class="detail-item" v-if="script.description">
-        <label>{{ t().FORM_LABELS.scriptDescriptionLabel }}</label>
+        <label>{{ t.FORM_LABELS.scriptDescriptionLabel }}</label>
         <span>{{ script.description }}</span>
       </div>
     </div>

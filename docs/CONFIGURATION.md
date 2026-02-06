@@ -245,6 +245,78 @@ utools-scripts-hub/
 }
 ```
 
+### settings (用户设置)
+
+用户设置包含个性化配置，如语言、主题色、按钮颜色等。
+
+#### Settings 对象
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `locale` | `string` | 否 | 语言设置，值为 `'zh-CN'` 或 `'en-US'`，默认 `'zh-CN'` |
+| `defaultExcludeFolders` | `string[]` | 否 | 扫描时默认排除的文件夹列表 |
+| `themeColor` | `string` | 否 | 主题色（十六进制颜色值），默认 `#58a4f6` |
+| `buttonColors` | `object` | 否 | 按钮颜色配置，包含 primary、danger、warning、success、default 五个字段 |
+
+#### 默认排除文件夹
+
+程序内置了以下可选的排除文件夹：
+
+| 文件夹 | 说明 |
+|--------|------|
+| `.git` | Git 版本控制目录 |
+| `node_modules` | Node.js 依赖目录 |
+| `__pycache__` | Python 缓存目录 |
+| `.venv` | Python 虚拟环境 |
+| `venv` | Python 虚拟环境 |
+| `dist` | 构建输出目录 |
+| `build` | 构建输出目录 |
+| `.idea` | IntelliJ IDEA 配置目录 |
+| `.vscode` | VS Code 配置目录 |
+| `target` | Rust/Java 构建输出目录 |
+| `.gradle` | Gradle 构建目录 |
+
+#### 默认值
+
+```json
+{
+  "settings": {
+    "locale": "zh-CN",
+    "defaultExcludeFolders": [".git", "node_modules", "__pycache__"],
+    "themeColor": "#58a4f6",
+    "buttonColors": {
+      "primary": "#58a4f6",
+      "danger": "#d32f2f",
+      "warning": "#ff9800",
+      "success": "#4caf50",
+      "default": "#999999"
+    }
+  }
+}
+```
+
+#### 示例
+
+**完整配置示例**:
+```json
+{
+  "scripts": [],
+  "rules": [],
+  "settings": {
+    "locale": "zh-CN",
+    "defaultExcludeFolders": [".git", "node_modules", "__pycache__", ".venv"],
+    "themeColor": "#58a4f6",
+    "buttonColors": {
+      "primary": "#58a4f6",
+      "danger": "#d32f2f",
+      "warning": "#ff9800",
+      "success": "#4caf50",
+      "default": "#999999"
+    }
+  }
+}
+```
+
 ## 🔍 正则表达式指南
 
 ### 常用模式
