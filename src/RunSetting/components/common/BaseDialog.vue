@@ -2,8 +2,8 @@
 import IconButton from './IconButton.vue'
 import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
 
-defineProps<{
-  title: string
+const props = defineProps<{
+  title?: string
 }>()
 
 const emit = defineEmits<{
@@ -16,10 +16,13 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="dialog-overlay" @click.self="handleClose">
-    <div class="dialog-content" @click.stop>
+  <div class="dialog-overlay">
+    <div class="dialog-content">
       <div class="dialog-header">
-        <h3>{{ title }}</h3>
+        <!-- 自定义 header slot -->
+        <slot name="header">
+          <h3>{{ title }}</h3>
+        </slot>
         <IconButton :icon="UI_ICONS.close" :tooltip="UI_TOOLTIPS.close" variant="default" @click="handleClose" />
       </div>
 
@@ -63,8 +66,9 @@ function handleClose() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-bottom: 1px solid #eee;
+  gap: 12px;
 }
 
 .dialog-header h3 {
@@ -74,7 +78,7 @@ function handleClose() {
 }
 
 .dialog-body {
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
   flex: 1;
 }
@@ -83,7 +87,7 @@ function handleClose() {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-top: 1px solid #eee;
 }
 
@@ -93,7 +97,7 @@ function handleClose() {
   }
 
   .dialog-header {
-    border-bottom-color: #666;
+    border-bottom-color: #555;
   }
 
   .dialog-header h3 {
@@ -101,7 +105,7 @@ function handleClose() {
   }
 
   .dialog-footer {
-    border-top-color: #666;
+    border-top-color: #555;
   }
 }
 </style>

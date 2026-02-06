@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { UI_COLORS, UI_SIZES } from '@/constants/ui'
+import { UI_SIZES } from '@/constants/ui'
 
 const props = withDefaults(defineProps<{
   icon: string
@@ -40,12 +40,12 @@ const buttonStyle = computed(() => {
 })
 
 const variantColors = {
-  primary: UI_COLORS.blue,
-  danger: UI_COLORS.red,
-  warning: UI_COLORS.orange,
-  success: UI_COLORS.green,
-  default: UI_COLORS.gray,
-} as const
+  primary: 'var(--btn-primary)',
+  danger: 'var(--btn-danger)',
+  warning: 'var(--btn-warning)',
+  success: 'var(--btn-success)',
+  default: 'var(--btn-default)',
+}
 
 const tooltipStyle = computed(() => {
   return {

@@ -1,4 +1,6 @@
 import { computed, ref } from "vue";
+import { getDefaultExcludeFolders } from "./useSettings";
+import { ERRORS } from "@/locales";
 
 export interface ScriptItem {
   id: string;
@@ -8,6 +10,10 @@ export interface ScriptItem {
   keywords?: string[];
   description?: string;
   disabled?: boolean;
+  /** 是否递归读取子文件夹，默认 false */
+  recursive?: boolean;
+  /** 排除的文件夹名称列表 */
+  excludeFolders?: string[];
 }
 
 export interface RuleItem {
@@ -33,7 +39,7 @@ export function loadConfig() {
     const data = window.services.readConfig();
     config.value = data;
   } catch (error) {
-    console.error("加载配置失败:", error);
+    console.error(`${ERRORS.loadConfigFailed}:`, error);
     config.value = { scripts: [], rules: [] };
   }
 }
@@ -44,7 +50,7 @@ export function saveConfig() {
     window.services.saveConfig(config.value);
     return true;
   } catch (error) {
-    console.error("保存配置失败:", error);
+    console.error(`${ERRORS.saveConfigFailed}:`, error);
     return false;
   }
 }
@@ -96,9 +102,9 @@ export function updateScriptsOrder(newOrder: ScriptItem[]) {
   const existingIds = new Set(config.value.scripts.map(s => s.id));
   const newOrderIds = newOrder.map(s => s.id);
   
-  if (newOrderIds.length !== existingIds.size || 
+  if (newOrderIds.length !== existingIds.size ||
       !newOrderIds.every(id => existingIds.has(id))) {
-    console.error("更新脚本顺序失败: ID 不匹配");
+    console.error(ERRORS.updateScriptsOrderFailed);
     return false;
   }
   
@@ -148,9 +154,9 @@ export function updateRulesOrder(newOrder: RuleItem[]) {
   const existingIds = new Set(config.value.rules.map(r => r.id));
   const newOrderIds = newOrder.map(r => r.id);
   
-  if (newOrderIds.length !== existingIds.size || 
+  if (newOrderIds.length !== existingIds.size ||
       !newOrderIds.every(id => existingIds.has(id))) {
-    console.error("更新规则顺序失败: ID 不匹配");
+    console.error(ERRORS.updateRulesOrderFailed);
     return false;
   }
   
@@ -192,9 +198,24 @@ export function searchScripts(keyword: string) {
   });
 }
 
+// 检查是否应该排除文件夹
+function shouldExcludeFolder(folderName: string, excludePatterns?: string[]): boolean {
+  const defaultExclude = getDefaultExcludeFolders();
+  const excludeList = [...defaultExclude, ...(excludePatterns || [])];
+  return excludeList.includes(folderName);
+}
+
 // 获取所有脚本（扁平化，包括文件夹中的脚本）
 export function getAllScripts(): ScriptItem[] {
   const result: ScriptItem[] = [];
+
+  // 创建路径到已禁用脚本的映射，用于检查文件夹内的文件是否被禁用
+  const disabledPaths = new Set<string>();
+  for (const script of config.value.scripts) {
+    if (script.disabled) {
+      disabledPaths.add(script.path);
+    }
+  }
 
   function traverse(items: ScriptItem[]) {
     for (const item of items) {
@@ -204,23 +225,40 @@ export function getAllScripts(): ScriptItem[] {
       }
 
       if (item.isDirectory) {
-        // 如果是目录，尝试读取目录内容（递归处理嵌套）
+        // 如果是目录，尝试读取目录内容
         try {
           const dirItems = window.services.readDirectory(item.path);
           for (const dirItem of dirItems) {
+            // 检查是否应该排除
+            const excludePatterns = item.excludeFolders || [];
+            if (shouldExcludeFolder(dirItem.name, excludePatterns)) {
+              continue;
+            }
+
             if (dirItem.isDirectory) {
-              // 递归处理子目录
-              const subDir: ScriptItem = {
-                id: `${item.id}-${dirItem.name}`,
-                name: dirItem.name,
-                path: dirItem.path,
-                isDirectory: true,
-                keywords: item.keywords,
-                description: item.description,
-                disabled: item.disabled, // 继承父目录的禁用状态
-              };
-              traverse([subDir]);
+              // 检查是否支持递归
+              if (item.recursive) {
+                // 递归处理子目录
+                const subDir: ScriptItem = {
+                  id: `${item.id}-${dirItem.name}`,
+                  name: dirItem.name,
+                  path: dirItem.path,
+                  isDirectory: true,
+                  keywords: item.keywords,
+                  description: item.description,
+                  disabled: item.disabled,
+                  recursive: true, // 子目录继承递归选项
+                  excludeFolders: item.excludeFolders,
+                };
+                traverse([subDir]);
+              }
+              // 如果不支持递归，跳过子目录
             } else {
+              // 检查文件是否在已禁用列表中
+              if (disabledPaths.has(dirItem.path)) {
+                continue;
+              }
+
               // 添加文件
               const script: ScriptItem = {
                 id: `${item.id}-${dirItem.name}`,
@@ -229,7 +267,7 @@ export function getAllScripts(): ScriptItem[] {
                 isDirectory: false,
                 keywords: item.keywords,
                 description: item.description,
-                disabled: item.disabled, // 继承父目录的禁用状态
+                disabled: false,
               };
               result.push(script);
             }

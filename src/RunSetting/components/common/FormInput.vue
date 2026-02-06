@@ -10,18 +10,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
+  'keydown': [event: KeyboardEvent]
 }>()
 
 const value = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val),
 })
+
+function handleKeydown(event: KeyboardEvent) {
+  emit('keydown', event)
+}
 </script>
 
 <template>
   <input v-if="type !== 'textarea'" v-model="value" :type="type || 'text'" :placeholder="placeholder"
-    class="form-input" />
-  <textarea v-else v-model="value" :placeholder="placeholder" :rows="rows || 2" class="form-textarea" />
+    class="form-input" @keydown="handleKeydown" />
+  <textarea v-else v-model="value" :placeholder="placeholder" :rows="rows || 2" class="form-textarea"
+    @keydown="handleKeydown" />
 </template>
 
 <style scoped>

@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import type { RuleItem } from '@/composables/useScripts'
 import ActionButtons from '@/RunSetting/components/common/ActionButtons.vue'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps<{
   rule: RuleItem
@@ -14,6 +16,13 @@ const emit = defineEmits<{
   delete: [id: string]
   toggleDisabled: [id: string]
 }>()
+
+const { settings } = useSettings()
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
 
 const showDetails = ref(false)
 
@@ -48,10 +57,10 @@ function handleToggle() {
       <div class="rule-info">
         <div class="rule-name">
           {{ rule.name }}
-          <span v-if="rule.disabled" class="disabled-badge">已禁用</span>
+          <span v-if="rule.disabled" class="disabled-badge">{{ t().STATUS_LABELS.disabled }}</span>
         </div>
         <div class="rule-pattern">
-          <span class="label">匹配模式：</span>
+          <span class="label">{{ t().FORM_LABELS.rulePattern }}</span>
           <code>{{ rule.pattern }}</code>
         </div>
       </div>
@@ -61,15 +70,15 @@ function handleToggle() {
 
     <div v-if="showDetails" class="rule-details">
       <div class="detail-item" v-if="rule.app">
-        <label>指定应用：</label>
+        <label>{{ t().FORM_LABELS.ruleApp }}</label>
         <code>{{ rule.app }}</code>
       </div>
       <div class="detail-item" v-if="rule.args && rule.args.length > 0">
-        <label>参数：</label>
+        <label>{{ t().FORM_LABELS.ruleArgs }}</label>
         <code>{{ rule.args.join(' ') }}</code>
       </div>
       <div class="detail-item" v-if="rule.description">
-        <label>描述：</label>
+        <label>{{ t().FORM_LABELS.ruleDescription }}</label>
         <span>{{ rule.description }}</span>
       </div>
     </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 
 defineProps<{

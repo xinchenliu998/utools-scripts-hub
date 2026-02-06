@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useScripts, type RuleItem } from '@/composables/useScripts'
 import BaseDialog from './common/BaseDialog.vue'
 import FormItem from './common/FormItem.vue'
 import FormInput from './common/FormInput.vue'
 import IconButton from './common/IconButton.vue'
-import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps<{
   rule?: RuleItem | null
@@ -16,6 +18,15 @@ const emit = defineEmits<{
 }>()
 
 const { addRule, updateRule } = useScripts()
+const { settings } = useSettings()
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
+
+// 当前语言的模板列表
+const templates = computed(() => t().RULE_TEMPLATES)
 
 const name = ref('')
 const pattern = ref('')
@@ -38,14 +49,14 @@ onMounted(() => {
 
 function handleSave() {
   if (!name.value || !pattern.value) {
-    window.utools.showNotification('请填写名称和匹配模式')
+    window.utools.showNotification(t().NOTIFICATIONS.ruleNameRequired)
     return
   }
 
   try {
     new RegExp(pattern.value)
   } catch (e) {
-    window.utools.showNotification('匹配模式不是有效的正则表达式')
+    window.utools.showNotification(t().NOTIFICATIONS.invalidPattern)
     return
   }
 
@@ -60,10 +71,10 @@ function handleSave() {
 
   if (isEditing.value && props.rule) {
     updateRule(props.rule.id, ruleData)
-    window.utools.showNotification('更新成功')
+    window.utools.showNotification(t().NOTIFICATIONS.ruleUpdated)
   } else {
     addRule(ruleData)
-    window.utools.showNotification('添加成功')
+    window.utools.showNotification(t().NOTIFICATIONS.ruleAdded)
   }
 
   emit('close')
@@ -72,15 +83,6 @@ function handleSave() {
 function handleCancel() {
   emit('close')
 }
-
-const templates = [
-  { name: '', label: '不使用模板' },
-  { name: 'JavaScript 文件', pattern: '\\.js$', app: 'node' },
-  { name: 'Python 文件', pattern: '\\.py$', app: 'python' },
-  { name: 'PowerShell 脚本', pattern: '\\.ps1$', app: 'powershell', args: '-ExecutionPolicy Bypass -File' },
-  { name: 'Bash 脚本', pattern: '\\.sh$', app: 'bash' },
-  { name: '批处理文件', pattern: '\\.(bat|cmd)$', app: '' }
-]
 
 function applyTemplate() {
   if (!selectedTemplate.value) {
@@ -91,7 +93,7 @@ function applyTemplate() {
     args.value = ''
     return
   }
-  const template = templates.find(t => t.name === selectedTemplate.value)
+  const template = templates.value.find((t: { name: string }) => t.name === selectedTemplate.value)
   if (template && template.name) {
     name.value = template.name
     pattern.value = template.pattern || ''
@@ -102,11 +104,11 @@ function applyTemplate() {
 </script>
 
 <template>
-  <BaseDialog :title="isEditing ? '编辑规则' : '添加规则'" @close="handleCancel">
+  <BaseDialog :title="isEditing ? t().DIALOG_TITLES.editRuleTitle : t().DIALOG_TITLES.addRuleTitle" @close="handleCancel">
     <template #default>
       <div class="templates-section" v-if="!isEditing">
         <div class="template-form-item">
-          <label>快速模板：</label>
+          <label>{{ t().FORM_LABELS_EXTRA.quickTemplateLabel }}</label>
           <select v-model="selectedTemplate" @change="applyTemplate" class="template-select">
             <option v-for="template in templates" :key="template.name || 'none'" :value="template.name">
               {{ template.label || template.name }}
@@ -115,30 +117,30 @@ function applyTemplate() {
         </div>
       </div>
 
-      <FormItem label="规则名称：">
-        <FormInput v-model="name" placeholder="例如: JavaScript 文件" />
+      <FormItem :label="t().FORM_LABELS.ruleName">
+        <FormInput v-model="name" :placeholder="t().PLACEHOLDERS.ruleName" />
       </FormItem>
 
-      <FormItem label="匹配模式（正则表达式）：" hint="用于匹配文件名或后缀的正则表达式">
-        <FormInput v-model="pattern" placeholder="例如: \.js$" />
+      <FormItem :label="t().FORM_LABELS.rulePattern" :hint="t().FORM_LABELS.rulePatternHint">
+        <FormInput v-model="pattern" :placeholder="t().PLACEHOLDERS.rulePattern" />
       </FormItem>
 
-      <FormItem label="指定应用（可选）：" hint="留空则使用默认方式执行脚本">
-        <FormInput v-model="app" placeholder="例如: node, python, powershell" />
+      <FormItem :label="t().FORM_LABELS.ruleApp" :hint="t().FORM_LABELS.ruleAppHint">
+        <FormInput v-model="app" :placeholder="t().PLACEHOLDERS.ruleApp" />
       </FormItem>
 
-      <FormItem label="参数（可选，空格分隔）：">
-        <FormInput v-model="args" placeholder="例如: -ExecutionPolicy Bypass -File" />
+      <FormItem :label="t().FORM_LABELS.ruleArgs">
+        <FormInput v-model="args" :placeholder="t().PLACEHOLDERS.ruleArgs" />
       </FormItem>
 
-      <FormItem label="描述（可选）：">
-        <FormInput v-model="description" type="textarea" placeholder="规则描述" :rows="2" />
+      <FormItem :label="t().FORM_LABELS.ruleDescription">
+        <FormInput v-model="description" type="textarea" :placeholder="t().FORM_LABELS_EXTRA.ruleDescriptionPlaceholder" :rows="2" />
       </FormItem>
     </template>
 
     <template #footer>
-      <IconButton :icon="UI_ICONS.cancel" :tooltip="UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
-      <IconButton :icon="UI_ICONS.save" :tooltip="UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="t().UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="t().UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
     </template>
   </BaseDialog>
 </template>

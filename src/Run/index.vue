@@ -3,7 +3,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useScripts, getAllScripts, type ScriptItem } from '@/composables/useScripts'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
-import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 import type { EnterAction } from '@/types/global'
 
@@ -12,21 +14,29 @@ defineProps<{
 }>()
 
 const { loadConfig, searchScripts } = useScripts()
+const { settings, loadSettings } = useSettings()
 
 const keyword = ref('')
 const selectedIndex = ref(0)
 const scripts = ref<ScriptItem[]>([])
 
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
+
 // 加载配置
 onMounted(() => {
   // 确保 services 已准备好
   if (window.services) {
+    loadSettings() // 先加载设置，确保排除文件夹配置已读取
     loadConfig()
     updateScripts()
   } else {
     // 如果 services 还没准备好，等待一下
     setTimeout(() => {
       if (window.services) {
+        loadSettings()
         loadConfig()
         updateScripts()
       }
@@ -73,7 +83,7 @@ async function executeScript(script: ScriptItem) {
   try {
     // 检查文件是否存在
     if (!window.services.pathExists(script.path)) {
-      window.utools.showNotification(`文件不存在: ${script.path}`)
+      window.utools.showNotification(`${t().NOTIFICATIONS.fileNotExists}${script.path}`)
       return
     }
 
@@ -84,7 +94,7 @@ async function executeScript(script: ScriptItem) {
     // window.utools.outPlugin()
   } catch (error: unknown) {
     const err = error as { error?: string; message?: string }
-    window.utools.showNotification(`打开失败: ${err.error || err.message || '未知错误'}`)
+    window.utools.showNotification(`${t().NOTIFICATIONS.openFailed}${err.error || err.message || '未知错误'}`)
   }
 }
 
@@ -105,14 +115,11 @@ onMounted(() => {
 <template>
   <div class="run-container" @keydown="handleKeyDown" tabindex="0">
     <div class="search-section">
-      <input v-model="keyword" type="text" class="search-input" placeholder="输入文件名或关键字搜索脚本..." autofocus />
-      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="UI_TOOLTIPS.run" variant="primary"
+      <input v-model="keyword" type="text" class="search-input" :placeholder="t().PLACEHOLDERS.searchScriptRun" autofocus />
+      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="t().UI_TOOLTIPS.run" variant="primary"
         tooltip-position="left" @click="executeScript(selectedScript)" />
       <HelpTooltip>
-        在搜索框中输入文件名或关键字快速查找脚本。
-        使用 <code>↑</code> <code>↓</code> 键选择脚本，<code>Enter</code> 键或点击运行按钮执行。
-        双击脚本项也可以直接运行。
-        使用 "run-setting" 关键字可以管理脚本和规则。
+        {{ t().HINTS.runHelp }}
       </HelpTooltip>
     </div>
 
@@ -129,8 +136,8 @@ onMounted(() => {
     </div>
 
     <div class="empty-state" v-else>
-      <p>没有找到匹配的脚本</p>
-      <p class="hint">使用 "run-setting" 关键字添加脚本</p>
+      <p>{{ t().HINTS.noMatchScript }}</p>
+      <p class="hint">{{ t().HINTS.addScriptKeyword }}</p>
     </div>
   </div>
 </template>

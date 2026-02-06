@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import type { ScriptItem } from '@/composables/useScripts'
 import ActionButtons from '@/RunSetting/components/common/ActionButtons.vue'
 import { UI_ICONS } from '@/constants/ui'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 const props = defineProps<{
   script: ScriptItem
@@ -15,6 +17,13 @@ const emit = defineEmits<{
   delete: [id: string]
   toggleDisabled: [id: string]
 }>()
+
+const { settings } = useSettings()
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
 
 const showDetails = ref(false)
 
@@ -54,7 +63,7 @@ function handleToggle() {
         <div class="script-name">
           <span class="icon">{{ script.isDirectory ? UI_ICONS.folder : UI_ICONS.file }}</span>
           {{ script.name }}
-          <span v-if="script.disabled" class="disabled-badge">已禁用</span>
+          <span v-if="script.disabled" class="disabled-badge">{{ t().STATUS_LABELS.disabled }}</span>
         </div>
         <div class="script-path">{{ displayPath }}</div>
       </div>
@@ -64,7 +73,7 @@ function handleToggle() {
 
     <div v-if="showDetails" class="script-details">
       <div class="detail-item" v-if="script.description">
-        <label>描述：</label>
+        <label>{{ t().FORM_LABELS.scriptDescriptionLabel }}</label>
         <span>{{ script.description }}</span>
       </div>
     </div>

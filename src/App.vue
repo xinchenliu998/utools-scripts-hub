@@ -2,6 +2,7 @@
 import { onMounted, ref, nextTick } from 'vue'
 import Run from '@/Run/index.vue'
 import RunSetting from '@/RunSetting/index.vue'
+import { LOADING } from '@/locales'
 
 import type { EnterAction } from '@/types/global'
 
@@ -40,12 +41,12 @@ onMounted(() => {
 
 <template>
   <div v-if="!route" class="loading-container">
-    <p>正在加载...</p>
+    <p>{{ LOADING.loading }}</p>
   </div>
   <Run v-else-if="route === 'run'" :enterAction="enterAction" />
   <RunSetting v-else-if="route === 'run-setting'" :enterAction="enterAction" />
   <div v-else class="unknown-route">
-    <p>未知的路由: {{ route }}</p>
+    <p>{{ LOADING.unknownRoute }}{{ route }}</p>
   </div>
 </template>
 

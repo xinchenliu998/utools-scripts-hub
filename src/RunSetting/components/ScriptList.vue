@@ -8,12 +8,20 @@ import SearchInput from '@/RunSetting/components/common/SearchInput.vue'
 import EmptyState from '@/RunSetting/components/common/EmptyState.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
-import { UI_ICONS, UI_TOOLTIPS, UI_MESSAGES } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 const { scripts, loadConfig, removeScript, toggleScriptDisabled, updateScriptsOrder } = useScripts()
+const { settings } = useSettings()
 const showAddDialog = ref(false)
 const editingScript = ref<ScriptItem | null>(null)
 const searchKeyword = ref('')
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
 
 const filteredScripts = computed(() => {
   if (!searchKeyword.value.trim()) {
@@ -63,7 +71,7 @@ function handleEdit(script: ScriptItem) {
 }
 
 function handleDelete(id: string) {
-  if (window.confirm(UI_MESSAGES.confirmDeleteScript)) {
+  if (window.confirm(t().UI_MESSAGES.confirmDeleteScript)) {
     removeScript(id)
   }
 }
@@ -86,24 +94,22 @@ function handleDragEnd() {
   <div class="script-list-container">
     <div class="header">
       <div class="search-container">
-        <SearchInput v-model="searchKeyword" placeholder="搜索脚本（名称、路径、描述、关键词）" />
+        <SearchInput v-model="searchKeyword" :placeholder="t().PLACEHOLDERS.searchScript" />
       </div>
       <div class="header-actions">
-        <IconButton :icon="UI_ICONS.add" :tooltip="UI_TOOLTIPS.addScript" variant="primary" tooltip-position="left"
+        <IconButton :icon="UI_ICONS.add" :tooltip="t().UI_TOOLTIPS.addScript" variant="primary" tooltip-position="left"
           @click="handleAdd" />
         <HelpTooltip>
-          添加脚本文件或文件夹到脚本列表，支持通过关键词搜索快速运行。
-          可以添加单个脚本文件，也可以添加整个文件夹（会自动扫描文件夹中的所有脚本）。
-          已禁用的脚本不会在运行界面显示。
+          {{ t().HINTS.scriptHelp }}
         </HelpTooltip>
       </div>
     </div>
 
     <div class="scripts-container">
-      <EmptyState v-if="scripts.length === 0" :message="UI_MESSAGES.emptyScripts"
-        :hint="UI_MESSAGES.emptyScriptsHint" />
-      <EmptyState v-else-if="filteredScripts.length === 0" :message="UI_MESSAGES.noMatchScripts"
-        :hint="UI_MESSAGES.searchHint" />
+      <EmptyState v-if="scripts.length === 0" :message="t().UI_MESSAGES.emptyScripts"
+        :hint="t().UI_MESSAGES.emptyScriptsHint" />
+      <EmptyState v-else-if="filteredScripts.length === 0" :message="t().UI_MESSAGES.noMatchScripts"
+        :hint="t().UI_MESSAGES.searchHint" />
       <draggable v-else v-model="draggableScripts" :disabled="!!searchKeyword.trim()" item-key="id"
         handle=".script-header" class="scripts-list" @end="handleDragEnd">
         <template #item="{ element: script, index }">

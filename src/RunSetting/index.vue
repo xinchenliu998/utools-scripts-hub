@@ -2,6 +2,9 @@
 import { ref } from 'vue'
 import ScriptList from '@/RunSetting/components/ScriptList.vue'
 import RuleList from '@/RunSetting/components/RuleList.vue'
+import SettingsDialog from '@/RunSetting/components/SettingsDialog.vue'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 import type { EnterAction } from '@/types/global'
 
@@ -9,17 +12,32 @@ defineProps<{
   enterAction?: EnterAction
 }>()
 
+const { settings } = useSettings()
 const activeTab = ref<'scripts' | 'rules'>('scripts')
+const showSettings = ref(false)
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
 </script>
 
 <template>
   <div class="run-setting-container">
-    <div class="tabs">
-      <button :class="['tab-btn', { active: activeTab === 'scripts' }]" @click="activeTab = 'scripts'">
-        脚本管理
-      </button>
-      <button :class="['tab-btn', { active: activeTab === 'rules' }]" @click="activeTab = 'rules'">
-        规则配置
+    <div class="header">
+      <div class="tabs">
+        <button :class="['tab-btn', { active: activeTab === 'scripts' }]" @click="activeTab = 'scripts'">
+          {{ t().TABS.scripts }}
+        </button>
+        <button :class="['tab-btn', { active: activeTab === 'rules' }]" @click="activeTab = 'rules'">
+          {{ t().TABS.rules }}
+        </button>
+      </div>
+      <button class="settings-btn" @click="showSettings = true" :title="t().DIALOG_TITLES.settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
       </button>
     </div>
 
@@ -27,6 +45,8 @@ const activeTab = ref<'scripts' | 'rules'>('scripts')
       <ScriptList v-if="activeTab === 'scripts'" />
       <RuleList v-if="activeTab === 'rules'" />
     </div>
+
+    <SettingsDialog v-if="showSettings" @close="showSettings = false" />
   </div>
 </template>
 
@@ -37,6 +57,13 @@ const activeTab = ref<'scripts' | 'rules'>('scripts')
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .tabs {
@@ -65,6 +92,35 @@ const activeTab = ref<'scripts' | 'rules'>('scripts')
 .tab-btn.active {
   color: var(--blue, rgb(88, 164, 246));
   border-bottom-color: var(--blue, rgb(88, 164, 246));
+}
+
+.settings-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #666;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-btn:hover {
+  background-color: #f0f0f0;
+  color: var(--blue, rgb(88, 164, 246));
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings-btn {
+    color: #bbb;
+  }
+
+  .settings-btn:hover {
+    background-color: #383838;
+    color: var(--blue, rgb(88, 164, 246));
+  }
 }
 
 .tab-content {

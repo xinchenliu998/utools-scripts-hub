@@ -8,12 +8,20 @@ import SearchInput from '@/RunSetting/components/common/SearchInput.vue'
 import EmptyState from '@/RunSetting/components/common/EmptyState.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import IconButton from '@/RunSetting/components/common/IconButton.vue'
-import { UI_ICONS, UI_TOOLTIPS, UI_MESSAGES } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
+import { zhCN, enUS } from '@/locales'
+import { useSettings } from '@/composables/useSettings'
 
 const { rules, loadConfig, removeRule, toggleRuleDisabled, searchRules, updateRulesOrder } = useScripts()
+const { settings } = useSettings()
 const showAddDialog = ref(false)
 const editingRule = ref<RuleItem | null>(null)
 const searchKeyword = ref('')
+
+// 获取当前语言的翻译
+function t() {
+  return settings.value.locale === 'en-US' ? enUS : zhCN
+}
 
 const filteredRules = computed(() => {
   if (!searchKeyword.value.trim()) {
@@ -56,7 +64,7 @@ function handleEdit(rule: RuleItem) {
 }
 
 function handleDelete(id: string) {
-  if (window.confirm(UI_MESSAGES.confirmDeleteRule)) {
+  if (window.confirm(t().UI_MESSAGES.confirmDeleteRule)) {
     removeRule(id)
   }
 }
@@ -79,22 +87,21 @@ function handleDragEnd() {
   <div class="rule-list-container">
     <div class="header">
       <div class="search-container">
-        <SearchInput v-model="searchKeyword" placeholder="搜索规则（名称、模式、应用、描述）" />
+        <SearchInput v-model="searchKeyword" :placeholder="t().PLACEHOLDERS.searchRule" />
       </div>
       <div class="header-actions">
-        <IconButton :icon="UI_ICONS.add" :tooltip="UI_TOOLTIPS.addRule" variant="primary" tooltip-position="left"
+        <IconButton :icon="UI_ICONS.add" :tooltip="t().UI_TOOLTIPS.addRule" variant="primary" tooltip-position="left"
           @click="handleAdd" />
         <HelpTooltip>
-          规则用于根据文件后缀或文件名匹配模式，自动指定应用来运行脚本。
-          例如：匹配 <code>\.js$</code> 的文件使用 <code>node</code> 运行。
+          {{ t().HINTS.ruleHelp }}
         </HelpTooltip>
       </div>
     </div>
 
     <div class="rules-container">
-      <EmptyState v-if="rules.length === 0" :message="UI_MESSAGES.emptyRules" :hint="UI_MESSAGES.emptyRulesHint" />
-      <EmptyState v-else-if="filteredRules.length === 0" :message="UI_MESSAGES.noMatchRules"
-        :hint="UI_MESSAGES.searchHint" />
+      <EmptyState v-if="rules.length === 0" :message="t().UI_MESSAGES.emptyRules" :hint="t().UI_MESSAGES.emptyRulesHint" />
+      <EmptyState v-else-if="filteredRules.length === 0" :message="t().UI_MESSAGES.noMatchRules"
+        :hint="t().UI_MESSAGES.searchHint" />
       <draggable v-else v-model="draggableRules" :disabled="!!searchKeyword.trim()" item-key="id" handle=".rule-header"
         class="rules-list" @end="handleDragEnd">
         <template #item="{ element: rule, index }">
