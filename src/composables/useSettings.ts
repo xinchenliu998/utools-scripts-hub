@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
-import { zhCN, enUS, DEFAULT_LOCALE, LOCALES, type LocaleType } from '@/locales';
+import { DEFAULT_LOCALE, LOCALES, type LocaleType } from '@/locales';
+import { i18n } from '@/i18n';
 
 export interface ButtonColors {
   primary: string;
@@ -20,23 +21,9 @@ export interface Settings {
   buttonColors: ButtonColors;
 }
 
-// 语言映射
-const LOCALE_MAP: Record<LocaleType, any> = {
-  'zh-CN': zhCN,
-  'en-US': enUS,
-};
-
-// 当前语言消息
-const currentLocaleMessages = ref<any>(LOCALE_MAP[DEFAULT_LOCALE]);
-
-// 获取当前语言消息（供外部使用）
-export function getLocaleMessagesExported() {
-  return currentLocaleMessages.value as Record<string, string>;
-}
-
-// 切换语言
+// 切换语言（同时更新 vue-i18n）
 export function setLocaleExported(locale: LocaleType) {
-  currentLocaleMessages.value = LOCALE_MAP[locale];
+  (i18n.global.locale as any).value = locale;
   settings.value.locale = locale;
   saveSettings();
 }
@@ -166,7 +153,6 @@ export function useSettings() {
     getButtonColors,
     DEFAULT_BUTTON_COLORS,
     setLocale: setLocaleExported,
-    localeMessages: computed(() => currentLocaleMessages.value),
     LOCALES,
   };
 }

@@ -30,6 +30,8 @@ function toggleFolder(key: string) {
   } else {
     selectedExcludeFolders.value.add(key)
   }
+  // 保存更改
+  updateDefaultExcludeFolders(getFinalExcludeFolders())
 }
 
 function getFinalExcludeFolders(): string[] {
@@ -53,11 +55,15 @@ function handleAddCustomFolders() {
   }
 
   customExcludeInput.value = ''
+  // 保存更改
+  updateDefaultExcludeFolders(getFinalExcludeFolders())
 }
 
 function handleDeleteCustomFolder(folder: string) {
-  if (window.confirm(t.UI_MESSAGES.confirmDeleteCustomFolder.replace('${name}', folder))) {
+  if (window.confirm(t('ui.messages.confirmDeleteCustomFolder', { name: folder }))) {
     customExcludeFolders.value = customExcludeFolders.value.filter(f => f !== folder)
+    // 保存更改
+    updateDefaultExcludeFolders(getFinalExcludeFolders())
   }
 }
 
@@ -79,7 +85,7 @@ onMounted(() => {
 
 <template>
   <div class="exclude-tab">
-    <p class="hint-text">{{ t.HINTS.excludeToggle }}</p>
+    <p class="hint-text">{{ t('ui.hints.excludeToggle') }}</p>
     <div class="folder-grid">
       <button
         v-for="folder in optionalExcludeFolders"
@@ -98,10 +104,10 @@ onMounted(() => {
         {{ folder }}
       </button>
     </div>
-    <FormItem :label="t.FORM_LABELS.excludeCustom">
+    <FormItem :label="t('ui.formLabels.excludeCustom')">
       <FormInput
         v-model="customExcludeInput"
-        :placeholder="t.PLACEHOLDERS.excludeFoldersExample"
+        :placeholder="t('ui.placeholders.excludeFoldersExample')"
         @keydown.enter.prevent="handleAddCustomFolders"
       />
     </FormItem>

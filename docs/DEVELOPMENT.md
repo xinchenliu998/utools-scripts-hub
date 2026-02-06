@@ -125,15 +125,16 @@ utools-scripts-hub/
 │   ├── composables/          # Vue 组合式函数
 │   │   ├── useScripts.ts     # 脚本管理逻辑（状态管理、CRUD、启用/禁用）
 │   │   └── useSettings.ts    # 设置管理（语言、主题色、按钮颜色、排除文件夹）
+│   ├── i18n.ts               # vue-i18n 配置入口
 │   ├── utils/                # 工具函数
-│   │   ├── i18n.ts           # i18n 工具函数
+│   │   ├── i18n.ts           # i18n 工具函数（兼容旧版）
 │   │   └── tooltip.ts        # tooltip 位置计算工具
 │   ├── locales/              # 国际化语言包
-│   │   ├── index.ts          # 语言包入口
+│   │   ├── index.ts          # 语言包入口（vue-i18n 格式）
 │   │   ├── zh-CN.ts          # 中文语言包
 │   │   └── en-US.ts          # 英文语言包
 │   ├── constants/            # 常量定义
-│   │   └── ui.ts             # UI相关常量（颜色、尺寸、图标、提示文字等）
+│   │   └── ui.ts             # UI相关常量（颜色、尺寸、图标）
 │   └── types/                # TypeScript 类型定义
 │       └── global.d.ts       # 全局类型声明（window.services、DirectoryItem、EnterAction等）
 ├── docs/                     # 文档目录

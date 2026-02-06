@@ -1,7 +1,6 @@
 /**
  * UI相关常量配置
  */
-export { UI_MESSAGES, UI_TOOLTIPS } from '@/locales';
 
 export const UI_COLORS = {
   blue: "rgb(88, 164, 246)",

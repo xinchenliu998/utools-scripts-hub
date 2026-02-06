@@ -308,18 +308,68 @@ interface Settings {
 
 #### 2.4 国际化 (i18n.ts)
 
-**职责**: 提供统一的翻译函数
+**职责**: 提供 vue-i18n 国际化支持
 
-**核心功能**:
-- 根据当前语言设置返回对应的翻译对象
-- 使用 reactive 确保语言切换时响应式更新
-- 统一的翻译接口 `t.xxx`
+**核心文件**:
+- `src/i18n.ts`: vue-i18n 实例创建入口
+  - 使用 `createI18n` 创建实例
+  - `legacy: false` 启用 Composition API 模式
+  - 默认语言: `zh-CN`
+- `src/locales/index.ts`: 语言包入口
+  - 导出 `messages`, `LocaleType`, `LOCALES`, `DEFAULT_LOCALE`
+  - 支持 `zh-CN` 和 `en-US` 两种语言
+- `src/locales/zh-CN.ts`: 中文语言包
+- `src/locales/en-US.ts`: 英文语言包
+
+**翻译键结构**:
+```typescript
+{
+  ui: {
+    messages: {...},      // 确认消息、提示信息
+    tooltips: {...},      // 按钮提示
+    tabs: {...},          // 标签页标题
+    buttonLabels: {...},  // 按钮标签
+    dialogTitles: {...},  // 对话框标题
+    formLabels: {...},    // 表单标签
+    placeholders: {...},  // 占位符
+    notifications: {...}, // 通知消息
+    statusLabels: {...}, // 状态标签
+    errors: {...},        // 错误信息
+    hints: {...},         // 帮助提示
+  }
+}
+```
+
+**使用方式**:
+```typescript
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+t('ui.tooltips.add')
+```
 
 **支持的语言**:
 - `zh-CN`: 中文
 - `en-US`: 英文
 
-#### 2.5 运行界面 (Run/index.vue)
+#### 2.5 常量配置 (constants/ui.ts)
+
+**职责**: 统一管理 UI 相关常量
+
+**常量分类**:
+- `UI_COLORS`: 颜色常量（blue, orange, green, red, gray, white, black 等）
+- `UI_SIZES`: 尺寸常量（按钮大小、边框圆角、间距等）
+- `UI_ICONS`: 图标常量（emoji 图标用于按钮和状态显示）
+
+**示例**:
+```typescript
+export const UI_COLORS = {
+  blue: "rgb(88, 164, 246)",
+  orange: "#ff9800",
+  // ...
+} as const
+```
+
+#### 2.6 运行界面 (Run/index.vue)
 
 **职责**: 脚本搜索和运行
 
@@ -335,7 +385,7 @@ interface Settings {
 3. 路径包含匹配
 4. 描述包含匹配
 
-#### 2.6 设置界面 (RunSetting/index.vue)
+#### 2.7 设置界面 (RunSetting/index.vue)
 
 **职责**: 脚本和规则的管理
 

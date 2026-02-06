@@ -2,12 +2,13 @@
 import { onMounted, ref, nextTick } from 'vue'
 import Run from '@/Run/index.vue'
 import RunSetting from '@/RunSetting/index.vue'
-import { LOADING } from '@/locales'
+import { useI18n } from '@/utils/i18n'
 
 import type { EnterAction } from '@/types/global'
 
 const route = ref('')
 const enterAction = ref<EnterAction>({} as EnterAction)
+const { t } = useI18n()
 
 onMounted(() => {
   // 监听插件进入事件
@@ -41,12 +42,12 @@ onMounted(() => {
 
 <template>
   <div v-if="!route" class="loading-container">
-    <p>{{ LOADING.loading }}</p>
+    <p>{{ t('ui.loading.loading') }}</p>
   </div>
   <Run v-else-if="route === 'run'" :enterAction="enterAction" />
   <RunSetting v-else-if="route === 'run-setting'" :enterAction="enterAction" />
   <div v-else class="unknown-route">
-    <p>{{ LOADING.unknownRoute }}{{ route }}</p>
+    <p>{{ t('ui.loading.unknownRoute') }}{{ route }}</p>
   </div>
 </template>
 

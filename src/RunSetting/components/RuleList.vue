@@ -58,7 +58,7 @@ function handleEdit(rule: RuleItem) {
 }
 
 function handleDelete(id: string) {
-  if (window.confirm(t.UI_MESSAGES.confirmDeleteRule)) {
+  if (window.confirm(t('ui.messages.confirmDeleteRule'))) {
     removeRule(id)
   }
 }
@@ -81,21 +81,21 @@ function handleDragEnd() {
   <div class="rule-list-container">
     <div class="header">
       <div class="search-container">
-        <SearchInput v-model="searchKeyword" :placeholder="t.PLACEHOLDERS.searchRule" />
+        <SearchInput v-model="searchKeyword" :placeholder="t('ui.placeholders.searchRule')" />
       </div>
       <div class="header-actions">
-        <IconButton :icon="UI_ICONS.add" :tooltip="t.UI_TOOLTIPS.addRule" variant="primary" tooltip-position="left"
+        <IconButton :icon="UI_ICONS.add" :tooltip="t('ui.tooltips.addRule')" variant="primary" tooltip-position="left"
           @click="handleAdd" />
         <HelpTooltip>
-          {{ t.HINTS.ruleHelp }}
+          {{ t('ui.hints.ruleHelp') }}
         </HelpTooltip>
       </div>
     </div>
 
     <div class="rules-container">
-      <EmptyState v-if="rules.length === 0" :message="t.UI_MESSAGES.emptyRules" :hint="t.UI_MESSAGES.emptyRulesHint" />
-      <EmptyState v-else-if="filteredRules.length === 0" :message="t.UI_MESSAGES.noMatchRules"
-        :hint="t.UI_MESSAGES.searchHint" />
+      <EmptyState v-if="rules.length === 0" :message="t('ui.messages.emptyRules')" :hint="t('ui.messages.emptyRulesHint')" />
+      <EmptyState v-else-if="filteredRules.length === 0" :message="t('ui.messages.noMatchRules')"
+        :hint="t('ui.messages.searchHint')" />
       <draggable v-else v-model="draggableRules" :disabled="!!searchKeyword.trim()" item-key="id" handle=".rule-header"
         class="rules-list" @end="handleDragEnd">
         <template #item="{ element: rule, index }">

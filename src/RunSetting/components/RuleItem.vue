@@ -44,10 +44,10 @@ function handleToggle() {
       <div class="rule-info">
         <div class="rule-name">
           {{ rule.name }}
-          <span v-if="rule.disabled" class="disabled-badge">{{ t.STATUS_LABELS.disabled }}</span>
+          <span v-if="rule.disabled" class="disabled-badge">{{ t('ui.statusLabels.disabled') }}</span>
         </div>
         <div class="rule-pattern">
-          <span class="label">{{ t.FORM_LABELS.rulePattern }}</span>
+          <span class="label">{{ t('ui.formLabels.rulePattern') }}</span>
           <code>{{ rule.pattern }}</code>
         </div>
       </div>
@@ -57,15 +57,15 @@ function handleToggle() {
 
     <div v-if="showDetails" class="rule-details">
       <div class="detail-item" v-if="rule.app">
-        <label>{{ t.FORM_LABELS.ruleApp }}</label>
+        <label>{{ t('ui.formLabels.ruleApp') }}</label>
         <code>{{ rule.app }}</code>
       </div>
       <div class="detail-item" v-if="rule.args && rule.args.length > 0">
-        <label>{{ t.FORM_LABELS.ruleArgs }}</label>
+        <label>{{ t('ui.formLabels.ruleArgs') }}</label>
         <code>{{ rule.args.join(' ') }}</code>
       </div>
       <div class="detail-item" v-if="rule.description">
-        <label>{{ t.FORM_LABELS.ruleDescription }}</label>
+        <label>{{ t('ui.formLabels.ruleDescription') }}</label>
         <span>{{ rule.description }}</span>
       </div>
     </div>

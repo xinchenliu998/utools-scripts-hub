@@ -1,20 +1,43 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import FormItem from '../common/FormItem.vue'
 import FormInput from '../common/FormInput.vue'
 import { useSettings, ButtonColors, DEFAULT_BUTTON_COLORS } from '@/composables/useSettings'
 import { useI18n } from '@/utils/i18n'
 
+// Normalize 3-digit hex to 6-digit hex (#999 -> #999999)
+function normalizeHex(color: string): string {
+  const trimmed = color.trim()
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`
+  }
+  return trimmed
+}
+
 const { settings, updateButtonColor } = useSettings()
 const { t } = useI18n()
 
 const colorLabels = computed(() => ({
-  primary: t.BUTTON_COLOR_LABELS.primary,
-  danger: t.BUTTON_COLOR_LABELS.danger,
-  warning: t.BUTTON_COLOR_LABELS.warning,
-  success: t.BUTTON_COLOR_LABELS.success,
-  default: t.BUTTON_COLOR_LABELS.default,
+  primary: t('ui.buttonLabels.primary'),
+  danger: t('ui.buttonLabels.danger'),
+  warning: t('ui.buttonLabels.warning'),
+  success: t('ui.buttonLabels.success'),
+  default: t('ui.buttonLabels.default'),
 }))
+
+// Normalize colors on load and when they change
+watch(
+  () => settings.value.buttonColors,
+  (colors) => {
+    for (const key of Object.keys(colors) as (keyof ButtonColors)[]) {
+      const normalized = normalizeHex(colors[key])
+      if (colors[key] !== normalized) {
+        colors[key] = normalized
+      }
+    }
+  },
+  { immediate: true, deep: true }
+)
 </script>
 
 <template>

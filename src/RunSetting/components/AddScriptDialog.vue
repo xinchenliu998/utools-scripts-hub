@@ -44,7 +44,7 @@ onMounted(() => {
 
 function handleSelectFile(selectAsDirectory: boolean) {
   const dialogOptions: OpenDialogOptions = {
-    title: selectAsDirectory ? t.DIALOG_OPTIONS.selectFolder.title : t.DIALOG_OPTIONS.selectFile.title
+    title: selectAsDirectory ? t('ui.dialogOptions.selectFolder.title') : t('ui.dialogOptions.selectFile.title')
   }
 
   if (selectAsDirectory) {
@@ -65,33 +65,38 @@ function handleSelectFile(selectAsDirectory: boolean) {
 
 function handleSave() {
   if (!name.value || !path.value) {
-    window.utools.showNotification(t.NOTIFICATIONS.scriptNameRequired)
+    window.utools.showNotification(t('ui.notifications.scriptNameRequired'))
     return
   }
 
   if (!window.services.pathExists(path.value)) {
-    window.utools.showNotification(t.NOTIFICATIONS.pathNotExists)
+    window.utools.showNotification(t('ui.notifications.pathNotExists'))
     return
   }
+
+  // 编辑时保持原有的 isDirectory 状态
+  const finalIsDirectory = isEditing.value && props.script
+    ? props.script.isDirectory
+    : isDirectory.value
 
   const scriptData: ScriptItem = {
     id: props.script?.id || `${Date.now()}-${Math.random()}`,
     name: name.value,
     path: path.value,
-    isDirectory: isDirectory.value,
+    isDirectory: finalIsDirectory,
     description: description.value || undefined,
-    recursive: isDirectory.value ? recursive.value : undefined,
-    excludeFolders: isDirectory.value && excludeFolders.value
+    recursive: finalIsDirectory ? recursive.value : undefined,
+    excludeFolders: finalIsDirectory && excludeFolders.value
       ? excludeFolders.value.split(',').map(s => s.trim()).filter(Boolean)
       : undefined
   }
 
   if (isEditing.value && props.script) {
     updateScript(props.script.id, scriptData)
-    window.utools.showNotification(t.NOTIFICATIONS.scriptUpdated)
+    window.utools.showNotification(t('ui.notifications.scriptUpdated'))
   } else {
     addScript(scriptData)
-    window.utools.showNotification(t.NOTIFICATIONS.scriptAdded)
+    window.utools.showNotification(t('ui.notifications.scriptAdded'))
   }
 
   emit('close')
@@ -103,45 +108,45 @@ function handleCancel() {
 </script>
 
 <template>
-  <BaseDialog :title="isEditing ? t.DIALOG_TITLES.editScriptTitle : t.DIALOG_TITLES.addScriptTitle" @close="handleCancel">
+  <BaseDialog :title="isEditing ? t('ui.dialogTitles.editScriptTitle') : t('ui.dialogTitles.addScriptTitle')" @close="handleCancel">
     <template #default>
-      <FormItem :label="t.FORM_LABELS.scriptName">
-        <FormInput v-model="name" :placeholder="t.PLACEHOLDERS.scriptName" />
+      <FormItem :label="t('ui.formLabels.scriptName')">
+        <FormInput v-model="name" :placeholder="t('ui.placeholders.scriptName')" />
       </FormItem>
 
-      <FormItem :label="t.FORM_LABELS.scriptPath">
+      <FormItem :label="t('ui.formLabels.scriptPath')">
         <div class="path-input-group">
-          <FormInput v-model="path" :placeholder="isDirectory ? t.FORM_LABELS.scriptFolderPath : t.FORM_LABELS.scriptFilePath" />
+          <FormInput v-model="path" :placeholder="isDirectory ? t('ui.formLabels.scriptFolderPath') : t('ui.formLabels.scriptFilePath')" />
           <IconButton tooltip-position="left" v-if="!isDirectory" :icon="UI_ICONS.file"
-            :tooltip="t.UI_TOOLTIPS.selectFile" variant="primary" @click="handleSelectFile(false)" />
-          <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="t.UI_TOOLTIPS.selectFolder"
+            :tooltip="t('ui.tooltips.selectFile')" variant="primary" @click="handleSelectFile(false)" />
+          <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="t('ui.tooltips.selectFolder')"
             variant="primary" @click="handleSelectFile(true)" />
         </div>
         <div class="folder-row">
           <label class="folder-checkbox">
             <input v-model="isDirectory" type="checkbox" />
-            <span>{{ t.FORM_LABELS.scriptFolder }}</span>
+            <span>{{ t('ui.formLabels.scriptFolder') }}</span>
           </label>
           <label v-if="isDirectory" class="folder-checkbox">
             <input v-model="recursive" type="checkbox" />
-            <span>{{ t.FORM_LABELS.scriptRecursive }}</span>
+            <span>{{ t('ui.formLabels.scriptRecursive') }}</span>
           </label>
         </div>
         <div v-if="isDirectory" class="folder-options">
-          <FormItem :label="t.FORM_LABELS.scriptExclude">
-            <FormInput v-model="excludeFolders" :placeholder="t.PLACEHOLDERS.excludeFolders" />
+          <FormItem :label="t('ui.formLabels.scriptExclude')">
+            <FormInput v-model="excludeFolders" :placeholder="t('ui.placeholders.excludeFolders')" />
           </FormItem>
         </div>
       </FormItem>
 
-      <FormItem :label="t.FORM_LABELS.scriptDescriptionLabel">
-        <FormInput v-model="description" type="textarea" :placeholder="t.PLACEHOLDERS.scriptDescription" :rows="3" />
+      <FormItem :label="t('ui.formLabels.scriptDescriptionLabel')">
+        <FormInput v-model="description" type="textarea" :placeholder="t('ui.placeholders.scriptDescription')" :rows="3" />
       </FormItem>
     </template>
 
     <template #footer>
-      <IconButton :icon="UI_ICONS.cancel" :tooltip="t.UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
-      <IconButton :icon="UI_ICONS.save" :tooltip="t.UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="t('ui.tooltips.cancel')" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="t('ui.tooltips.save')" variant="primary" @click="handleSave" />
     </template>
   </BaseDialog>
 </template>

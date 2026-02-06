@@ -50,7 +50,7 @@ function handleToggle() {
         <div class="script-name">
           <span class="icon">{{ script.isDirectory ? UI_ICONS.folder : UI_ICONS.file }}</span>
           {{ script.name }}
-          <span v-if="script.disabled" class="disabled-badge">{{ t.STATUS_LABELS.disabled }}</span>
+          <span v-if="script.disabled" class="disabled-badge">{{ t('ui.statusLabels.disabled') }}</span>
         </div>
         <div class="script-path">{{ displayPath }}</div>
       </div>
@@ -60,7 +60,7 @@ function handleToggle() {
 
     <div v-if="showDetails" class="script-details">
       <div class="detail-item" v-if="script.description">
-        <label>{{ t.FORM_LABELS.scriptDescriptionLabel }}</label>
+        <label>{{ t('ui.formLabels.scriptDescriptionLabel') }}</label>
         <span>{{ script.description }}</span>
       </div>
     </div>

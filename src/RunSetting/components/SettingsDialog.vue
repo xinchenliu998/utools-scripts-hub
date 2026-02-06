@@ -15,18 +15,19 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const { resetSettings } = useSettings()
+const { resetSettings, saveSettings } = useSettings()
 const { t } = useI18n()
 
 const activeTab = ref<SettingsTab>('appearance')
 
 const tabs = computed(() => [
-  { key: 'appearance' as const, label: t.TABS.appearance, icon: '🎨' },
-  { key: 'exclude' as const, label: t.TABS.exclude, icon: '📁' },
-  { key: 'buttons' as const, label: t.TABS.buttons, icon: '🔘' },
+  { key: 'appearance' as const, label: t('ui.tabs.appearance'), icon: '🎨' },
+  { key: 'exclude' as const, label: t('ui.tabs.exclude'), icon: '📁' },
+  { key: 'buttons' as const, label: t('ui.tabs.buttons'), icon: '🔘' },
 ])
 
 function handleSave() {
+  saveSettings()
   emit('close')
 }
 
@@ -36,12 +37,12 @@ function handleCancel() {
 
 function handleReset() {
   resetSettings()
-  window.utools.showNotification(t.NOTIFICATIONS.reset)
+  window.utools.showNotification(t('ui.notifications.reset'))
 }
 </script>
 
 <template>
-  <BaseDialog :title="t.DIALOG_TITLES.settings" @close="handleCancel">
+  <BaseDialog :title="t('ui.dialogTitles.settings')" @close="handleCancel">
     <template #header>
       <div class="tab-nav">
         <button
@@ -65,9 +66,9 @@ function handleReset() {
     </template>
 
     <template #footer>
-      <IconButton :icon="UI_ICONS.reset" :tooltip="t.UI_TOOLTIPS.reset" variant="default" @click="handleReset" />
-      <IconButton :icon="UI_ICONS.cancel" :tooltip="t.UI_TOOLTIPS.cancel" variant="default" @click="handleCancel" />
-      <IconButton :icon="UI_ICONS.save" :tooltip="t.UI_TOOLTIPS.save" variant="primary" @click="handleSave" />
+      <IconButton :icon="UI_ICONS.reset" :tooltip="t('ui.tooltips.reset')" variant="default" @click="handleReset" />
+      <IconButton :icon="UI_ICONS.cancel" :tooltip="t('ui.tooltips.cancel')" variant="default" @click="handleCancel" />
+      <IconButton :icon="UI_ICONS.save" :tooltip="t('ui.tooltips.save')" variant="primary" @click="handleSave" />
     </template>
   </BaseDialog>
 </template>

@@ -25,7 +25,7 @@ const toggleIcon = computed(() => {
 })
 
 const toggleTooltip = computed(() => {
-  return props.disabled ? t.UI_TOOLTIPS.enable : t.UI_TOOLTIPS.disable
+  return props.disabled ? t('ui.tooltips.enable') : t('ui.tooltips.disable')
 })
 
 const toggleVariant = computed(() => {
@@ -37,9 +37,9 @@ const toggleVariant = computed(() => {
   <div class="action-buttons" @click.stop>
     <IconButton v-if="showToggle" :icon="toggleIcon" :tooltip="toggleTooltip" :variant="toggleVariant"
       :tooltip-position="tooltipPosition" @click="emit('toggle')" />
-    <IconButton v-if="showEdit" :icon="UI_ICONS.edit" :tooltip="t.UI_TOOLTIPS.edit" variant="primary"
+    <IconButton v-if="showEdit" :icon="UI_ICONS.edit" :tooltip="t('ui.tooltips.edit')" variant="primary"
       :tooltip-position="tooltipPosition" @click="emit('edit')" />
-    <IconButton v-if="showDelete" :icon="UI_ICONS.delete" :tooltip="t.UI_TOOLTIPS.delete" variant="danger"
+    <IconButton v-if="showDelete" :icon="UI_ICONS.delete" :tooltip="t('ui.tooltips.delete')" variant="danger"
       :tooltip-position="tooltipPosition" @click="emit('delete')" />
   </div>
 </template>

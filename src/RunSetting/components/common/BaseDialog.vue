@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import IconButton from './IconButton.vue'
-import { UI_ICONS, UI_TOOLTIPS } from '@/constants/ui'
+import { UI_ICONS } from '@/constants/ui'
+import { useI18n } from '@/utils/i18n'
 
 const props = defineProps<{
   title?: string
@@ -9,6 +10,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
 }>()
+
+const { t } = useI18n()
 
 function handleClose() {
   emit('close')
@@ -23,7 +26,7 @@ function handleClose() {
         <slot name="header">
           <h3>{{ title }}</h3>
         </slot>
-        <IconButton :icon="UI_ICONS.close" :tooltip="UI_TOOLTIPS.close" variant="default" @click="handleClose" />
+        <IconButton :icon="UI_ICONS.close" :tooltip="t('ui.tooltips.close')" variant="default" @click="handleClose" />
       </div>
 
       <div class="dialog-body">

@@ -30,7 +30,7 @@ function handleLocaleChange(e: Event) {
         </option>
       </select>
     </FormItem>
-    <FormItem :label="t.FORM_LABELS.themeColor">
+    <FormItem :label="t('ui.formLabels.themeColor')">
       <div class="color-row">
         <input type="color" v-model="settings.themeColor" class="color-picker" />
         <FormInput

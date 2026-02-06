@@ -5,7 +5,7 @@ import IconButton from '@/RunSetting/components/common/IconButton.vue'
 import HelpTooltip from '@/RunSetting/components/common/HelpTooltip.vue'
 import { UI_ICONS } from '@/constants/ui'
 import { useI18n } from '@/utils/i18n'
-import { useSettings } from '@/composables/useSettings'
+import { useSettings, getDefaultExcludeFolders } from '@/composables/useSettings'
 
 import type { EnterAction } from '@/types/global'
 
@@ -20,6 +20,77 @@ const { t } = useI18n()
 const keyword = ref('')
 const selectedIndex = ref(0)
 const scripts = ref<ScriptItem[]>([])
+
+// 递归收集文件夹中的文件
+function collectFilesFromFolder(folder: ScriptItem, excludeFolders: string[]): ScriptItem[] {
+  const files: ScriptItem[] = []
+  try {
+    const entries = window.services.readDirectory(folder.path)
+    for (const entry of entries) {
+      // 构建完整路径
+      const fullPath = entry.path.startsWith(folder.path)
+        ? entry.path
+        : `${folder.path}/${entry.name}`
+
+      if (entry.isDirectory) {
+        // 检查是否在排除列表中
+        const folderName = entry.name
+        if (excludeFolders.includes(folderName)) {
+          continue
+        }
+        // 根据是否递归设置决定是否遍历子文件夹
+        if (folder.recursive) {
+          // 递归时优先使用父文件夹的 excludeFolders 设置
+          const subExcludeFolders = folder.excludeFolders || excludeFolders
+          const subFiles = collectFilesFromFolder({
+            ...entry,
+            id: `${folder.id}-${fullPath}`,
+            name: entry.name,
+            path: fullPath,
+            isDirectory: true,
+            recursive: true,
+            excludeFolders: subExcludeFolders
+          }, subExcludeFolders)
+          files.push(...subFiles)
+        }
+      } else {
+        files.push({
+          ...entry,
+          id: `${folder.id}-${fullPath}`,
+          name: entry.name,
+          path: fullPath,
+          isDirectory: false
+        })
+      }
+    }
+  } catch (e) {
+    console.error('Failed to read directory:', folder.path, e)
+  }
+  return files
+}
+
+// 收集所有文件（递归遍历文件夹）
+function collectAllFiles(allScripts: ScriptItem[]): ScriptItem[] {
+  const defaultExcludeFolders = getDefaultExcludeFolders()
+  const result: ScriptItem[] = []
+
+  for (const script of allScripts) {
+    if (script.disabled) continue
+
+    if (script.isDirectory) {
+      // 优先使用脚本自己的 excludeFolders，否则使用全局设置
+      const scriptExcludeFolders = script.excludeFolders || defaultExcludeFolders
+      // 遍历文件夹
+      const folderFiles = collectFilesFromFolder(script, scriptExcludeFolders)
+      result.push(...folderFiles)
+    } else {
+      // 直接添加文件
+      result.push(script)
+    }
+  }
+
+  return result
+}
 
 // 加载配置
 onMounted(() => {
@@ -42,10 +113,21 @@ onMounted(() => {
 
 // 更新脚本列表
 function updateScripts() {
+  const allScripts = getAllScripts()
+  const collectedFiles = collectAllFiles(allScripts)
+
   if (keyword.value) {
-    scripts.value = searchScripts(keyword.value)
+    const lowerKeyword = keyword.value.toLowerCase()
+    // 在收集的文件中进行模糊搜索
+    scripts.value = collectedFiles.filter(script => {
+      const nameMatch = script.name.toLowerCase().includes(lowerKeyword)
+      const pathMatch = script.path.toLowerCase().includes(lowerKeyword)
+      const descMatch = script.description?.toLowerCase().includes(lowerKeyword)
+      const keywordsMatch = script.keywords?.some(k => k.toLowerCase().includes(lowerKeyword))
+      return nameMatch || pathMatch || descMatch || keywordsMatch
+    })
   } else {
-    scripts.value = getAllScripts()
+    scripts.value = collectedFiles
   }
   selectedIndex.value = 0
 }
@@ -79,7 +161,7 @@ async function executeScript(script: ScriptItem) {
   try {
     // 检查文件是否存在
     if (!window.services.pathExists(script.path)) {
-      window.utools.showNotification(`${t.NOTIFICATIONS.fileNotExists}${script.path}`)
+      window.utools.showNotification(`${t('ui.notifications.fileNotExists')}${script.path}`)
       return
     }
 
@@ -90,7 +172,7 @@ async function executeScript(script: ScriptItem) {
     // window.utools.outPlugin()
   } catch (error: unknown) {
     const err = error as { error?: string; message?: string }
-    window.utools.showNotification(`${t.NOTIFICATIONS.openFailed}${err.error || err.message || '未知错误'}`)
+    window.utools.showNotification(`${t('ui.notifications.openFailed')}${err.error || err.message || '未知错误'}`)
   }
 }
 
@@ -111,11 +193,11 @@ onMounted(() => {
 <template>
   <div class="run-container" @keydown="handleKeyDown" tabindex="0">
     <div class="search-section">
-      <input v-model="keyword" type="text" class="search-input" :placeholder="t.PLACEHOLDERS.searchScriptRun" autofocus />
-      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="t.UI_TOOLTIPS.run" variant="primary"
+      <input v-model="keyword" type="text" class="search-input" :placeholder="t('ui.placeholders.searchScriptRun')" autofocus />
+      <IconButton v-if="selectedScript" :icon="UI_ICONS.run" :tooltip="t('ui.tooltips.run')" variant="primary"
         tooltip-position="left" @click="executeScript(selectedScript)" />
       <HelpTooltip>
-        {{ t.HINTS.runHelp }}
+        {{ t('ui.hints.runHelp') }}
       </HelpTooltip>
     </div>
 
@@ -132,8 +214,8 @@ onMounted(() => {
     </div>
 
     <div class="empty-state" v-else>
-      <p>{{ t.HINTS.noMatchScript }}</p>
-      <p class="hint">{{ t.HINTS.addScriptKeyword }}</p>
+      <p>{{ t('ui.hints.noMatchScript') }}</p>
+      <p class="hint">{{ t('ui.hints.addScriptKeyword') }}</p>
     </div>
   </div>
 </template>
