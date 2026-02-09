@@ -108,7 +108,8 @@ function handleCancel() {
 </script>
 
 <template>
-  <BaseDialog :title="isEditing ? t('ui.dialogTitles.editScriptTitle') : t('ui.dialogTitles.addScriptTitle')" @close="handleCancel">
+  <BaseDialog :title="isEditing ? t('ui.dialogTitles.editScriptTitle') : t('ui.dialogTitles.addScriptTitle')"
+    @close="handleCancel">
     <template #default>
       <FormItem :label="t('ui.formLabels.scriptName')">
         <FormInput v-model="name" :placeholder="t('ui.placeholders.scriptName')" />
@@ -116,7 +117,8 @@ function handleCancel() {
 
       <FormItem :label="t('ui.formLabels.scriptPath')">
         <div class="path-input-group">
-          <FormInput v-model="path" :placeholder="isDirectory ? t('ui.formLabels.scriptFolderPath') : t('ui.formLabels.scriptFilePath')" />
+          <FormInput v-model="path"
+            :placeholder="isDirectory ? t('ui.formLabels.scriptFolderPath') : t('ui.formLabels.scriptFilePath')" />
           <IconButton tooltip-position="left" v-if="!isDirectory" :icon="UI_ICONS.file"
             :tooltip="t('ui.tooltips.selectFile')" variant="primary" @click="handleSelectFile(false)" />
           <IconButton tooltip-position="left" v-else :icon="UI_ICONS.folder" :tooltip="t('ui.tooltips.selectFolder')"
@@ -133,14 +135,15 @@ function handleCancel() {
           </label>
         </div>
         <div v-if="isDirectory" class="folder-options">
-          <FormItem :label="t('ui.formLabels.scriptExclude')">
+          <FormItem :label="t('ui.formLabels.scriptExcludeFolders')">
             <FormInput v-model="excludeFolders" :placeholder="t('ui.placeholders.excludeFolders')" />
           </FormItem>
         </div>
       </FormItem>
 
       <FormItem :label="t('ui.formLabels.scriptDescriptionLabel')">
-        <FormInput v-model="description" type="textarea" :placeholder="t('ui.placeholders.scriptDescription')" :rows="3" />
+        <FormInput v-model="description" type="textarea" :placeholder="t('ui.placeholders.scriptDescription')"
+          :rows="3" />
       </FormItem>
     </template>
 

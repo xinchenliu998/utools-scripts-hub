@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-02-09
+
+### Features
+
+- 脚本列表添加复制路径功能，支持一键复制脚本路径到剪贴板
+- 重置设置前添加确认对话框，防止误操作
+
+### Improvements
+
+- 优化国际化文案，将"排除"改为更明确的"排除文件夹"
+- 优化排除文件夹占位符示例，提供更清晰的填写指引
+
 ## [1.0.4] - 2026-02-06
 
 ### Features

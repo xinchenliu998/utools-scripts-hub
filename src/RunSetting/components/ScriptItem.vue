@@ -21,6 +21,7 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const showDetails = ref(false)
+const copied = ref(false)
 
 const displayPath = computed(() => {
   return props.script.path
@@ -41,6 +42,18 @@ function handleDelete() {
 function handleToggle() {
   emit('toggleDisabled', props.script.id)
 }
+
+async function handleCopy() {
+  try {
+    await navigator.clipboard.writeText(props.script.path)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 1500)
+  } catch (err) {
+    console.error('Failed to copy:', err)
+  }
+}
 </script>
 
 <template>
@@ -52,10 +65,12 @@ function handleToggle() {
           {{ script.name }}
           <span v-if="script.disabled" class="disabled-badge">{{ t('ui.statusLabels.disabled') }}</span>
         </div>
-        <div class="script-path">{{ displayPath }}</div>
+        <div class="script-path">{{ displayPath }}<span v-if="copied" class="copied-hint">{{
+          t('ui.notifications.copied') }}</span></div>
       </div>
       <ActionButtons :disabled="script.disabled" :show-edit="true" :show-delete="true" :show-toggle="true"
-        :tooltip-position="tooltipPosition" @edit="handleEdit" @delete="handleDelete" @toggle="handleToggle" />
+        :show-copy="true" :tooltip-position="tooltipPosition" @edit="handleEdit" @delete="handleDelete"
+        @toggle="handleToggle" @copy="handleCopy" />
     </div>
 
     <div v-if="showDetails" class="script-details">
@@ -120,6 +135,12 @@ function handleToggle() {
   font-size: 12px;
   color: #666;
   word-break: break-all;
+}
+
+.copied-hint {
+  font-size: 12px;
+  color: #4caf50;
+  margin-left: 8px;
 }
 
 .script-item.disabled {

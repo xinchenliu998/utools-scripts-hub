@@ -9,6 +9,7 @@ const props = defineProps<{
   showEdit?: boolean
   showDelete?: boolean
   showToggle?: boolean
+  showCopy?: boolean
   tooltipPosition?: 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 }>()
 
@@ -16,6 +17,7 @@ const emit = defineEmits<{
   edit: []
   delete: []
   toggle: []
+  copy: []
 }>()
 
 const { t } = useI18n()
@@ -35,6 +37,8 @@ const toggleVariant = computed(() => {
 
 <template>
   <div class="action-buttons" @click.stop>
+    <IconButton v-if="showCopy" :icon="UI_ICONS.copy" :tooltip="t('ui.tooltips.copy')" variant="default"
+      :tooltip-position="tooltipPosition" @click="emit('copy')" />
     <IconButton v-if="showToggle" :icon="toggleIcon" :tooltip="toggleTooltip" :variant="toggleVariant"
       :tooltip-position="tooltipPosition" @click="emit('toggle')" />
     <IconButton v-if="showEdit" :icon="UI_ICONS.edit" :tooltip="t('ui.tooltips.edit')" variant="primary"

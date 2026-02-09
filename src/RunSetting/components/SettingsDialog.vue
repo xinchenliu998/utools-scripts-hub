@@ -9,7 +9,7 @@ import AppearanceTab from './settings/AppearanceTab.vue'
 import ExcludeTab from './settings/ExcludeTab.vue'
 import ButtonsTab from './settings/ButtonsTab.vue'
 
-type SettingsTab = 'appearance' | 'exclude' | 'buttons'
+type SettingsTab = 'appearance' | 'excludeFolders' | 'buttons'
 
 const emit = defineEmits<{
   close: []
@@ -22,7 +22,7 @@ const activeTab = ref<SettingsTab>('appearance')
 
 const tabs = computed(() => [
   { key: 'appearance' as const, label: t('ui.tabs.appearance'), icon: '🎨' },
-  { key: 'exclude' as const, label: t('ui.tabs.exclude'), icon: '📁' },
+  { key: 'excludeFolders' as const, label: t('ui.tabs.excludeFolders'), icon: '📁' },
   { key: 'buttons' as const, label: t('ui.tabs.buttons'), icon: '🔘' },
 ])
 
@@ -36,6 +36,9 @@ function handleCancel() {
 }
 
 function handleReset() {
+  if (!window.confirm(t('ui.messages.confirmReset'))) {
+    return
+  }
   resetSettings()
   window.utools.showNotification(t('ui.notifications.reset'))
 }
@@ -60,7 +63,7 @@ function handleReset() {
     <template #default>
       <div class="tab-content">
         <AppearanceTab v-show="activeTab === 'appearance'" />
-        <ExcludeTab v-show="activeTab === 'exclude'" />
+        <ExcludeTab v-show="activeTab === 'excludeFolders'" />
         <ButtonsTab v-show="activeTab === 'buttons'" />
       </div>
     </template>

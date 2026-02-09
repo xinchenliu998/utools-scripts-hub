@@ -38,4 +38,5 @@ export const UI_ICONS = {
   reset: "↺",
   run: "▶",
   select: "📂",
+  copy: "📋",
 } as const;
